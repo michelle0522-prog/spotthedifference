@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>找不同遊戲｜12 題互動挑戰</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
   <style>
     body {
@@ -75,22 +74,17 @@
   <!-- 頂部導覽列 -->
   <header class="sticky top-0 z-30 bg-[#FAF6EE]/95 backdrop-blur border-b-2 border-[#3D352E]/15">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2">
-      <!-- 品牌與標題 -->
       <div class="flex items-center gap-2.5 cursor-pointer" onclick="goHome()">
         <div class="w-10 h-10 rounded-xl bg-amber-400 border-2 border-[#3D352E] flex items-center justify-center text-xl shadow-[0_2px_0_#3D352E]">
           🔍
         </div>
         <div>
           <h1 class="text-lg sm:text-xl font-black tracking-tight text-[#2D2A26] leading-tight">找不同遊戲</h1>
-          <p class="text-xs text-stone-500 hidden sm:block">1_a.png～12_b.png 雙模式觀察與記憶挑戰（全 12 題）</p>
+          <p class="text-xs text-stone-500 hidden sm:block">雙模式觀察與記憶挑戰（全 12 題）</p>
         </div>
       </div>
 
-      <!-- 遊戲中狀態顯示（僅在關卡內顯示） -->
       <div id="header-game-status" class="hidden items-center gap-2 sm:gap-3">
-        <button onclick="openZipUploadModal()" class="storybook-btn bg-sky-200 hover:bg-sky-300 text-sky-950 px-2.5 py-1 rounded-xl text-xs font-black">
-          📦 載入 ZIP / PNG
-        </button>
         <span id="header-mode-badge" class="px-2.5 py-1 rounded-full text-xs font-black border-2 border-[#3D352E] bg-emerald-200">
           簡易版
         </span>
@@ -102,7 +96,6 @@
         </div>
       </div>
 
-      <!-- 返回主頁按鈕（關卡內顯示） -->
       <div class="flex items-center gap-2">
         <button id="btn-header-home" onclick="goHome()" class="hidden storybook-btn bg-amber-200 hover:bg-amber-300 text-[#2D2A26] px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-black items-center gap-1.5">
           <span>🏠</span>
@@ -115,11 +108,8 @@
   <!-- 主內容容器 -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-5">
 
-    <!-- ========================================================= -->
-    <!-- 首頁視圖：選擇簡易版（關卡一至六）或難度版（關卡一至六）      -->
-    <!-- ========================================================= -->
+    <!-- 首頁視圖 -->
     <section id="view-home" class="space-y-7">
-      <!-- 主頁歡迎與總進度卡 -->
       <div class="storybook-card p-5 sm:p-6 bg-gradient-to-br from-amber-50 via-white to-sky-50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div class="space-y-1.5">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-300 border-2 border-[#3D352E] text-xs font-black">
@@ -128,7 +118,7 @@
           <h2 class="text-2xl sm:text-3xl font-black text-[#2D2A26]">請選擇挑戰模式與關卡</h2>
           <p class="text-sm text-stone-600 max-w-2xl">
             <strong>簡易版（關卡一至六）</strong>：左右對照原圖與改動圖，找出 6 處不同。<br/>
-            <strong>難度版（關卡一至六，第 7–12 題）</strong>：先看原圖再憑記憶找 6 處不同，支援 60–180 秒手動倒數計時器與不限次數偷看原圖。
+            <strong>難度版（關卡一至六）</strong>：先看原圖再憑記憶找 6 處不同，支援 60–180 秒手動倒數計時器與不限次數偷看原圖。
           </p>
         </div>
 
@@ -140,35 +130,6 @@
           <button onclick="openResetModal()" class="storybook-btn bg-rose-100 hover:bg-rose-200 text-rose-900 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold">
             🔄 重置全部進度
           </button>
-        </div>
-      </div>
-
-      <!-- 圖片載入方式與批次拖曳/選取區 -->
-      <div id="asset-loader-dropzone"
-           ondragover="handleDropzoneDragOver(event)"
-           ondragleave="handleDropzoneDragLeave(event)"
-           ondrop="handleDropzoneDrop(event)"
-           class="storybook-card p-4 sm:p-5 bg-white space-y-3 transition-colors">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div class="space-y-1">
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="px-2.5 py-0.5 rounded-lg bg-sky-200 border-2 border-[#3D352E] text-xs font-black">🖼️ 圖片載入狀態</span>
-              <span id="loaded-images-summary" class="text-xs sm:text-sm font-black text-stone-800">已設定自動讀取同資料夾 1_a.png～12_b.png</span>
-            </div>
-            <p class="text-xs text-stone-600">
-              網站會自動讀取同資料夾下的 <code class="bg-stone-100 px-1.5 py-0.5 rounded font-bold">1_a.png</code>～<code class="bg-stone-100 px-1.5 py-0.5 rounded font-bold">12_b.png</code>；若在本機測試或需臨時載入，也可拖曳或選取 <code class="bg-amber-100 px-1.5 py-0.5 rounded font-bold text-amber-950">.zip</code> 壓縮檔或 <code class="bg-stone-100 px-1.5 py-0.5 rounded font-bold">.png</code> 圖片。
-            </p>
-          </div>
-          <div class="flex flex-wrap items-center gap-2 shrink-0">
-            <label class="storybook-btn bg-amber-300 hover:bg-amber-400 text-stone-950 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black cursor-pointer inline-flex items-center gap-1.5">
-              🗜️ 上傳 ZIP 壓縮檔
-              <input type="file" id="batch-zip-input" accept=".zip,application/zip,application/x-zip-compressed" onchange="handleZipOrFilesSelected(event)" class="hidden" />
-            </label>
-            <label class="storybook-btn bg-sky-200 hover:bg-sky-300 text-sky-950 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black cursor-pointer inline-flex items-center gap-1.5">
-              📂 多選 PNG 圖片
-              <input type="file" id="batch-file-input" accept=".png,image/png,.zip,application/zip" multiple onchange="handleZipOrFilesSelected(event)" class="hidden" />
-            </label>
-          </div>
         </div>
       </div>
 
@@ -184,7 +145,7 @@
         <div id="easy-level-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </div>
 
-      <!-- 難度版區塊（關卡一至六，對應第 7–12 題） -->
+      <!-- 難度版區塊（關卡一至六） -->
       <div class="space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2.5">
@@ -197,11 +158,8 @@
       </div>
     </section>
 
-    <!-- ========================================================= -->
-    <!-- 遊戲視圖：單關遊玩畫面                                      -->
-    <!-- ========================================================= -->
+    <!-- 遊戲視圖：單關遊玩畫面 -->
     <section id="view-game" class="hidden space-y-4">
-      <!-- 關卡頂部工具列 -->
       <div class="storybook-card p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-3">
         <div class="flex flex-wrap items-center gap-2.5">
           <button onclick="goHome()" class="storybook-btn bg-amber-200 hover:bg-amber-300 text-[#2D2A26] px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-black inline-flex items-center gap-1">
@@ -226,14 +184,13 @@
 
       <!-- 難度版專屬：記憶倒數控制列（手動模式，60–180秒） -->
       <div id="hard-control-panel" class="hidden storybook-card p-4 bg-gradient-to-r from-amber-50 to-orange-50">
-        <!-- 階段 A：記憶原圖階段 -->
         <div id="hard-memorize-bar" class="flex flex-col lg:flex-row items-center justify-between gap-4">
           <div class="flex items-center gap-3">
             <div class="w-12 h-12 rounded-2xl bg-amber-400 border-2 border-[#3D352E] flex items-center justify-center text-2xl shrink-0">
               🧠
             </div>
             <div>
-              <div class="font-black text-base sm:text-lg text-amber-950">步驟 1：記憶原圖（_a.png）（手動計時模式）</div>
+              <div class="font-black text-base sm:text-lg text-amber-950">步驟 1：記憶原圖（手動計時模式）</div>
               <p class="text-xs sm:text-sm text-stone-700">選擇 60～180 秒後手動按「開始倒數」；進入關卡或開始作答均不會自動倒數。</p>
             </div>
           </div>
@@ -258,18 +215,17 @@
               ↺ 重設
             </button>
             <button onclick="switchToPlayPhase()" class="storybook-btn bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-black">
-              🎯 開始找不同（_b.png）
+              🎯 開始找不同
             </button>
           </div>
         </div>
 
-        <!-- 階段 B：作答階段（提供不限次數偷看原圖） -->
         <div id="hard-play-bar" class="hidden flex-col sm:flex-row items-center justify-between gap-3">
           <div class="flex items-center gap-2.5">
             <span class="text-2xl">🕵️</span>
             <div>
-              <div class="font-black text-base text-[#2D2A26]">步驟 2：憑記憶在下方「改動圖（_b.png）」點擊找出 6 處不同！</div>
-              <div class="text-xs text-stone-600">可隨時點擊右側「偷看原圖」查看原圖（_a.png），不限次數、不扣分、不扣秒。</div>
+              <div class="font-black text-base text-[#2D2A26]">步驟 2：憑記憶在下方改動圖點擊找出 6 處不同！</div>
+              <div class="text-xs text-stone-600">可隨時點擊右側「偷看原圖」查看原圖，不限次數、不扣分、不扣秒。</div>
             </div>
           </div>
           <div class="flex items-center gap-2 shrink-0">
@@ -314,41 +270,32 @@
 
       <!-- 雙圖遊戲主舞台 -->
       <div id="boards-wrapper" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        <!-- 左側／上方：原圖面板 -->
         <div id="original-panel" class="storybook-card p-3 sm:p-4 space-y-2.5">
           <div class="flex items-center justify-between">
             <span id="original-panel-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-sky-100 border-2 border-[#3D352E] text-xs sm:text-sm font-black text-sky-950">
-              🖼️ 原圖（_a.png）
+              🖼️ 原圖
             </span>
             <span id="original-hint-tag" class="text-xs font-bold text-stone-500">請仔細觀察畫面細節</span>
           </div>
           <div id="original-canvas-box" class="scene-aspect bg-stone-900/5"></div>
         </div>
 
-        <!-- 右側／下方：改動圖互動點擊面板 -->
         <div id="diff-panel" class="storybook-card p-3 sm:p-4 space-y-2.5">
           <div class="flex items-center justify-between">
             <span id="diff-panel-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-rose-100 border-2 border-[#3D352E] text-xs sm:text-sm font-black text-rose-950">
-              🎯 改動圖（_b.png，點擊找出 6 處不同）
+              🎯 改動圖（點擊找出 6 處不同）
             </span>
             <span id="click-feedback-msg" class="text-xs font-black text-rose-600 h-4"></span>
           </div>
           <div id="diff-canvas-box" class="scene-aspect cursor-crosshair bg-stone-900/5"
-               onclick="handleDiffImageClick(event)"
-               onmousedown="handleEditorMouseDown(event)"
-               onmousemove="handleEditorMouseMove(event)"
-               onmouseup="handleEditorMouseUp(event)"
-               ontouchstart="handleEditorTouchStart(event)"
-               ontouchmove="handleEditorTouchMove(event)"
-               ontouchend="handleEditorTouchEnd(event)">
+               onclick="handleDiffImageClick(event)">
             <div id="diff-image-layer" class="w-full h-full"></div>
             <div id="markers-layer" class="absolute inset-0 pointer-events-none"></div>
-            <div id="editor-overlay-layer" class="hidden absolute inset-0 bg-black/25"></div>
           </div>
         </div>
       </div>
 
-      <!-- 下方：6 處不同點清單（逐一解鎖差異說明） -->
+      <!-- 下方：6 處不同點清單 -->
       <div class="storybook-card p-4 sm:p-5 space-y-3">
         <div class="flex items-center justify-between">
           <h3 class="text-base sm:text-lg font-black text-[#2D2A26]">📋 本關 6 處不同點發現紀錄</h3>
@@ -356,51 +303,6 @@
         </div>
         <div id="differences-checklist" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
       </div>
-
-      <!-- 座標校正模式與單張圖片替換面板 -->
-      <details id="calibration-details" class="storybook-card p-4 bg-stone-50">
-        <summary class="cursor-pointer font-black text-sm sm:text-base text-stone-800 flex items-center justify-between">
-          <span>📐 座標校正模式與圖片載入設定（拖曳／點選調整 6 個差異框並複製 JSON）</span>
-          <span class="text-xs font-bold text-stone-500 bg-white px-2.5 py-1 rounded-lg border border-stone-300">點擊展開 / 收合</span>
-        </summary>
-        <div class="mt-4 pt-4 border-t-2 border-stone-200 space-y-4 text-sm">
-          <div class="bg-white p-3.5 rounded-xl border-2 border-stone-300 space-y-3">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <div class="font-black text-stone-800">座標校正模式開關</div>
-                <p class="text-xs text-stone-600">開啟後可在改動圖上<strong>拖曳框選</strong>或<strong>點選定位</strong>調整 1～6 號差異框的百分比座標（x, y, w, h），並一鍵複製 JSON。</p>
-              </div>
-              <div class="flex flex-wrap items-center gap-2">
-                <button id="btn-toggle-editor" onclick="toggleCoordinateEditor()" class="storybook-btn bg-amber-200 hover:bg-amber-300 px-3.5 py-1.5 rounded-xl text-xs font-black">
-                  開啟座標校正模式
-                </button>
-                <button onclick="copyLevelCoordinatesJSON()" class="storybook-btn bg-emerald-200 hover:bg-emerald-300 text-emerald-950 px-3.5 py-1.5 rounded-xl text-xs font-black">
-                  📋 複製本關 JSON
-                </button>
-                <button onclick="resetLevelCustomData()" class="storybook-btn bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-xl text-xs font-bold text-rose-700">
-                  ↺ 還原本關預設座標
-                </button>
-              </div>
-            </div>
-
-            <div id="editor-controls" class="hidden space-y-3 pt-2 border-t border-stone-200">
-              <div class="flex flex-wrap items-center gap-2" id="editor-target-buttons"></div>
-              <pre id="editor-json-preview" class="bg-stone-900 text-emerald-300 p-3 rounded-xl text-xs overflow-x-auto font-mono"></pre>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-white p-3.5 rounded-xl border-2 border-stone-300 space-y-2">
-              <div id="single-orig-label" class="font-bold text-stone-800">替換本題原圖（_a.png）</div>
-              <input type="file" accept=".png,image/png" onchange="handleCustomImageUpload(event, 'a')" class="block w-full text-xs text-stone-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-2 file:border-[#3D352E] file:font-bold file:bg-sky-100 hover:file:bg-sky-200 cursor-pointer" />
-            </div>
-            <div class="bg-white p-3.5 rounded-xl border-2 border-stone-300 space-y-2">
-              <div id="single-diff-label" class="font-bold text-stone-800">替換本題改動圖（_b.png）</div>
-              <input type="file" accept=".png,image/png" onchange="handleCustomImageUpload(event, 'b')" class="block w-full text-xs text-stone-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-2 file:border-[#3D352E] file:font-bold file:bg-rose-100 hover:file:bg-rose-200 cursor-pointer" />
-            </div>
-          </div>
-        </div>
-      </details>
     </section>
   </main>
 
@@ -420,40 +322,11 @@
     </div>
   </div>
 
-  <!-- 隨時載入 ZIP / PNG 彈出視窗 -->
-  <div id="zip-upload-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="storybook-card bg-white max-w-lg w-full p-5 sm:p-6 space-y-4 animate-pop"
-         ondragover="handleDropzoneDragOver(event)"
-         ondragleave="handleDropzoneDragLeave(event)"
-         ondrop="handleDropzoneDrop(event)">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-black text-[#2D2A26]">📦 載入 ZIP 壓縮檔或 PNG 圖片</h3>
-        <button onclick="closeZipUploadModal()" class="storybook-btn bg-stone-100 hover:bg-stone-200 px-3 py-1 rounded-xl text-xs font-black">✕ 關閉</button>
-      </div>
-      <p class="text-xs sm:text-sm text-stone-600">
-        可直接拖曳 <code class="bg-amber-100 px-1.5 py-0.5 rounded font-bold">1_a.png</code>～<code class="bg-amber-100 px-1.5 py-0.5 rounded font-bold">12_b.png</code> 或 <code class="bg-amber-100 px-1.5 py-0.5 rounded font-bold">.zip</code> 到此視窗，或點擊下方按鈕選取檔案。
-      </p>
-      <div id="modal-upload-status" class="p-3 rounded-xl bg-sky-50 border-2 border-sky-200 text-xs font-black text-sky-900">
-        目前狀態：已設定自動讀取同資料夾 1_a.png～12_b.png
-      </div>
-      <div class="flex flex-wrap gap-2 justify-end">
-        <label class="storybook-btn bg-amber-300 hover:bg-amber-400 text-stone-950 px-4 py-2 rounded-xl text-xs sm:text-sm font-black cursor-pointer">
-          🗜️ 選擇 ZIP 檔案
-          <input type="file" accept=".zip,application/zip,application/x-zip-compressed" onchange="handleZipOrFilesSelected(event)" class="hidden" />
-        </label>
-        <label class="storybook-btn bg-sky-200 hover:bg-sky-300 text-sky-950 px-4 py-2 rounded-xl text-xs sm:text-sm font-black cursor-pointer">
-          📂 多選 PNG 圖片
-          <input type="file" accept=".png,image/png" multiple onchange="handleZipOrFilesSelected(event)" class="hidden" />
-        </label>
-      </div>
-    </div>
-  </div>
-
   <!-- 重置全部進度確認視窗 -->
   <div id="reset-modal" class="hidden fixed inset-0 z-50 bg-black/65 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="storybook-card bg-white max-w-md w-full p-5 space-y-4 animate-pop">
       <h3 class="text-lg font-black text-[#2D2A26]">⚠️ 確認重置全部通關進度？</h3>
-      <p class="text-sm text-stone-600">這會清除所有 12 關的通關紀錄，但不會清除自訂校正的座標。</p>
+      <p class="text-sm text-stone-600">這會清除所有 12 關的通關紀錄。</p>
       <div class="flex justify-end gap-2">
         <button onclick="closeResetModal()" class="storybook-btn bg-stone-100 hover:bg-stone-200 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold">取消</button>
         <button onclick="confirmResetProgress()" class="storybook-btn bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-black">確定重置</button>
@@ -610,11 +483,9 @@
     ];
 
     const STORAGE_KEY_PROGRESS = 'spot_diff_12q_progress_v1';
-    const STORAGE_KEY_COORDS = 'spot_diff_12q_custom_coords_v1';
 
     const state = {
       completedLevels: [],
-      customCoords: {},
       currentLevelId: null,
       foundDiffIds: [],
       hardPhase: 'memorize',
@@ -622,14 +493,8 @@
       timerRemaining: 60,
       timerRunning: false,
       timerInterval: null,
-      peekCount: 0,
-      editorActive: false,
-      editorSelectedDiffId: 1,
-      dragState: null
+      peekCount: 0
     };
-
-    const runtimeImageMap = new Map();
-    const relativeFailedMap = new Map();
 
     let audioCtx = null;
     function getAudioCtx() {
@@ -697,235 +562,29 @@
       return `${level.imagePrefix}_${suffix}.png`;
     }
 
-    function getImageSrc(fileName) {
-      if (runtimeImageMap.has(fileName)) {
-        return runtimeImageMap.get(fileName);
-      }
-      return `./${fileName}`;
-    }
-
     function buildImageElementHtml(level, suffix, extraClass = 'w-full h-full object-contain') {
       const fileName = getAssetFilename(level, suffix);
       const roleLabel = suffix === 'a' ? '原圖' : '改動圖';
-      const src = getImageSrc(fileName);
-      const safeFile = fileName.replace(/'/g, "\\'");
-      const safeRole = roleLabel.replace(/'/g, "\\'");
-
       return `
         <img
-          src="${src}"
-          alt="${level.stageLabel} ${level.title} ${roleLabel}（${fileName}）"
+          src="./${fileName}"
+          alt="${level.stageLabel} ${level.title} ${roleLabel}"
           class="${extraClass}"
-          onload="handleImageLoaded('${safeFile}')"
-          onerror="handleImageLoadError(this, '${safeFile}', '${safeRole}')"
         />
       `;
-    }
-
-    function buildMissingImagePromptHtml(fileName, roleLabel) {
-      return `
-        <div class="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-amber-50/95 border-2 border-dashed border-amber-500 rounded-xl space-y-2">
-          <div class="text-2xl">🖼️</div>
-          <div class="text-sm sm:text-base font-black text-rose-700">
-            尚未找到 ${fileName}（${roleLabel}）
-          </div>
-          <p class="text-xs text-stone-600 max-w-md">
-            請確認 <strong class="font-mono">${fileName}</strong> 已與 <strong class="font-mono">index.html</strong> 放在同一層，或點擊下方按鈕上傳 ZIP / PNG 圖片。
-          </p>
-          <button type="button" onclick="event.stopPropagation(); openZipUploadModal();"
-                  class="storybook-btn bg-amber-300 hover:bg-amber-400 text-stone-950 px-3 py-1.5 rounded-xl text-xs font-black">
-            📦 載入 ZIP / PNG
-          </button>
-        </div>
-      `;
-    }
-
-    function handleImageLoaded(fileName) {
-      relativeFailedMap.set(fileName, false);
-      updateLoadedImagesSummary();
-    }
-
-    function handleImageLoadError(imgEl, fileName, roleLabel) {
-      relativeFailedMap.set(fileName, true);
-      updateLoadedImagesSummary();
-      if (imgEl && imgEl.parentElement) {
-        imgEl.parentElement.innerHTML = buildMissingImagePromptHtml(fileName, roleLabel);
-      }
-    }
-
-    async function processUploadedFiles(fileList) {
-      if (!fileList || fileList.length === 0) return 0;
-      const validNames = new Set();
-      for (let i = 1; i <= 12; i++) {
-        validNames.add(`${i}_a.png`);
-        validNames.add(`${i}_b.png`);
-      }
-
-      let matchedCount = 0;
-      const summary = document.getElementById('loaded-images-summary');
-      const modalStatus = document.getElementById('modal-upload-status');
-
-      for (const file of Array.from(fileList)) {
-        const lowerName = (file.name || '').toLowerCase();
-        if (lowerName.endsWith('.zip')) {
-          if (typeof JSZip === 'undefined') {
-            if (summary) summary.textContent = '⚠️ JSZip 載入失敗，請改用「多選 PNG 圖片」上傳解壓縮後的 24 張 PNG';
-            continue;
-          }
-          try {
-            if (summary) {
-              summary.textContent = `⏳ 正在解壓縮 ${file.name}，請稍候...`;
-              summary.className = 'text-xs sm:text-sm font-black text-amber-800';
-            }
-            if (modalStatus) modalStatus.textContent = `⏳ 正在解壓縮 ${file.name}...`;
-
-            const zip = await JSZip.loadAsync(file);
-            const entries = Object.values(zip.files);
-            for (const entry of entries) {
-              if (entry.dir) continue;
-              const baseName = entry.name.split('/').pop().split('\\').pop().toLowerCase();
-              if (validNames.has(baseName)) {
-                const blob = await entry.async('blob');
-                const pngBlob = new Blob([blob], { type: 'image/png' });
-                const oldUrl = runtimeImageMap.get(baseName);
-                if (oldUrl && oldUrl.startsWith('blob:')) {
-                  URL.revokeObjectURL(oldUrl);
-                }
-                const url = URL.createObjectURL(pngBlob);
-                runtimeImageMap.set(baseName, url);
-                relativeFailedMap.set(baseName, false);
-                matchedCount++;
-              }
-            }
-          } catch (err) {
-            console.error('解壓縮 ZIP 失敗:', err);
-            if (summary) summary.textContent = `❌ 解壓縮 ${file.name} 失敗，請確認檔案為有效 ZIP 格式`;
-          }
-        } else {
-          const baseName = lowerName.split('/').pop().split('\\').pop();
-          if (validNames.has(baseName)) {
-            const oldUrl = runtimeImageMap.get(baseName);
-            if (oldUrl && oldUrl.startsWith('blob:')) {
-              URL.revokeObjectURL(oldUrl);
-            }
-            const url = URL.createObjectURL(file);
-            runtimeImageMap.set(baseName, url);
-            relativeFailedMap.set(baseName, false);
-            matchedCount++;
-          }
-        }
-      }
-
-      updateLoadedImagesSummary();
-      if (!document.getElementById('view-home').classList.contains('hidden')) {
-        renderHomeMenu();
-      } else if (state.currentLevelId) {
-        const curLevel = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
-        if (curLevel) renderSceneImages(curLevel);
-      }
-      if (runtimeImageMap.size === 24) {
-        closeZipUploadModal();
-      }
-      return matchedCount;
-    }
-
-    async function handleZipOrFilesSelected(event) {
-      const files = event.target.files;
-      await processUploadedFiles(files);
-      event.target.value = '';
-    }
-
-    function handleDropzoneDragOver(event) {
-      event.preventDefault();
-      const dz = document.getElementById('asset-loader-dropzone');
-      if (dz) dz.classList.add('bg-amber-100/70');
-    }
-
-    function handleDropzoneDragLeave(event) {
-      event.preventDefault();
-      const dz = document.getElementById('asset-loader-dropzone');
-      if (dz) dz.classList.remove('bg-amber-100/70');
-    }
-
-    async function handleDropzoneDrop(event) {
-      event.preventDefault();
-      const dz = document.getElementById('asset-loader-dropzone');
-      if (dz) dz.classList.remove('bg-amber-100/70');
-      const files = event.dataTransfer && event.dataTransfer.files;
-      await processUploadedFiles(files);
-    }
-
-    function openZipUploadModal() {
-      updateLoadedImagesSummary();
-      document.getElementById('zip-upload-modal').classList.remove('hidden');
-    }
-
-    function closeZipUploadModal() {
-      document.getElementById('zip-upload-modal').classList.add('hidden');
-    }
-
-    function updateLoadedImagesSummary() {
-      const el = document.getElementById('loaded-images-summary');
-      const modalStatus = document.getElementById('modal-upload-status');
-      const cached = runtimeImageMap.size;
-      const failedCount = Array.from(relativeFailedMap.values()).filter(Boolean).length;
-
-      let text = '';
-      let cls = '';
-      if (cached === 24) {
-        text = '✅ 已載入 24 / 24 張原圖與改動圖（1_a.png～12_b.png）';
-        cls = 'text-xs sm:text-sm font-black text-emerald-700';
-      } else if (cached > 0) {
-        text = `📦 已快取 ${cached} / 24 張圖片（其餘自動讀取 ./檔名）`;
-        cls = 'text-xs sm:text-sm font-black text-sky-800';
-      } else if (failedCount > 0) {
-        text = `⚠️ 有 ${failedCount} 張圖片尚未載入（請確認同層有 1_a.png～12_b.png 或上傳 ZIP / PNG）`;
-        cls = 'text-xs sm:text-sm font-black text-rose-700';
-      } else {
-        text = '✅ 已設定自動讀取同資料夾 ./1_a.png～./12_b.png';
-        cls = 'text-xs sm:text-sm font-black text-emerald-800';
-      }
-
-      if (el) {
-        el.textContent = text;
-        el.className = cls;
-      }
-      if (modalStatus) {
-        modalStatus.textContent = `目前進度：已快取 ${cached} / 24 張圖片，其餘自動讀取 ./檔名`;
-      }
     }
 
     function loadPersistedState() {
       try {
         const savedProg = localStorage.getItem(STORAGE_KEY_PROGRESS);
         if (savedProg) state.completedLevels = JSON.parse(savedProg);
-        const savedCoords = localStorage.getItem(STORAGE_KEY_COORDS);
-        if (savedCoords) state.customCoords = JSON.parse(savedCoords);
-      } catch (e) {
-        console.warn('讀取進度失敗', e);
-      }
+      } catch (e) {}
     }
 
     function saveProgress() {
       try {
         localStorage.setItem(STORAGE_KEY_PROGRESS, JSON.stringify(state.completedLevels));
       } catch (e) {}
-    }
-
-    function saveCustomCoords() {
-      try {
-        localStorage.setItem(STORAGE_KEY_COORDS, JSON.stringify(state.customCoords));
-      } catch (e) {}
-    }
-
-    function getLevelDifferences(level) {
-      const customList = state.customCoords[level.id];
-      return level.differences.map((d, idx) => {
-        if (customList && customList[idx]) {
-          return { ...d, ...customList[idx] };
-        }
-        return { ...d };
-      });
     }
 
     function renderHomeMenu() {
@@ -953,9 +612,6 @@
           ? 'bg-emerald-200 text-emerald-950'
           : 'bg-amber-200 text-amber-950';
 
-        const origFile = getAssetFilename(level, 'a');
-        const diffFile = getAssetFilename(level, 'b');
-
         card.innerHTML = `
           <div class="space-y-2.5">
             <div class="flex items-center justify-between gap-2">
@@ -972,15 +628,12 @@
               ${buildImageElementHtml(level, 'a', 'w-full h-full object-cover')}
             </div>
 
-            <div class="space-y-0.5 pt-0.5">
-              <div class="flex items-center justify-between gap-2">
-                <h3 class="text-lg font-black text-[#2D2A26] flex items-center gap-1.5">
-                  <span>${level.themeEmoji}</span>
-                  <span>${level.stageLabel}：${level.title}</span>
-                </h3>
-                <span class="text-xs font-bold text-stone-500 shrink-0">6 處不同</span>
-              </div>
-              <div class="text-[11px] font-mono text-stone-500">原圖 ${origFile} / 改動圖 ${diffFile}</div>
+            <div class="flex items-center justify-between gap-2 pt-0.5">
+              <h3 class="text-lg font-black text-[#2D2A26] flex items-center gap-1.5">
+                <span>${level.themeEmoji}</span>
+                <span>${level.stageLabel}：${level.title}</span>
+              </h3>
+              <span class="text-xs font-bold text-stone-500 shrink-0">6 處不同</span>
             </div>
           </div>
 
@@ -996,15 +649,12 @@
       document.getElementById('easy-progress-text').textContent = `已完成 ${easyDone} / 6 關`;
       document.getElementById('hard-progress-text').textContent = `已完成 ${hardDone} / 6 關`;
       document.getElementById('total-completed-count').textContent = easyDone + hardDone;
-      updateLoadedImagesSummary();
     }
 
     function goHome() {
       stopManualTimer();
       closePeekModal();
       state.currentLevelId = null;
-      state.editorActive = false;
-      state.dragState = null;
 
       document.getElementById('view-home').classList.remove('hidden');
       document.getElementById('view-game').classList.add('hidden');
@@ -1025,9 +675,6 @@
       state.currentLevelId = levelId;
       state.foundDiffIds = [];
       state.peekCount = 0;
-      state.editorActive = false;
-      state.dragState = null;
-      state.editorSelectedDiffId = 1;
 
       document.getElementById('view-home').classList.add('hidden');
       document.getElementById('view-game').classList.remove('hidden');
@@ -1040,14 +687,6 @@
       const headerHomeBtn = document.getElementById('btn-header-home');
       headerHomeBtn.classList.remove('hidden');
       headerHomeBtn.classList.add('flex');
-
-      const origFile = getAssetFilename(level, 'a');
-      const diffFile = getAssetFilename(level, 'b');
-
-      document.getElementById('original-panel-badge').textContent = `🖼️ 原圖（${origFile}）`;
-      document.getElementById('diff-panel-badge').textContent = `🎯 改動圖（${diffFile}，點擊找 6 處不同）`;
-      document.getElementById('single-orig-label').textContent = `替換本題原圖（${origFile}）`;
-      document.getElementById('single-diff-label').textContent = `替換本題改動圖（${diffFile}）`;
 
       const modeBadge = document.getElementById('header-mode-badge');
       const gameModeTag = document.getElementById('game-mode-tag');
@@ -1070,7 +709,6 @@
       renderSceneImages(level);
       renderMarkers();
       renderDifferencesChecklist();
-      renderEditorControls();
 
       const hardPanel = document.getElementById('hard-control-panel');
       const mobileTabs = document.getElementById('mobile-compare-tabs');
@@ -1216,8 +854,7 @@
       state.peekCount++;
       document.getElementById('peek-count-display').textContent = state.peekCount;
 
-      const origFile = getAssetFilename(level, 'a');
-      document.getElementById('peek-modal-title').textContent = `${level.stageLabel}：${level.title}（${origFile}・第 ${state.peekCount} 次偷看）`;
+      document.getElementById('peek-modal-title').textContent = `${level.stageLabel}：${level.title}（第 ${state.peekCount} 次偷看）`;
       document.getElementById('peek-modal-canvas').innerHTML = buildImageElementHtml(level, 'a', 'w-full h-full object-contain bg-white');
       document.getElementById('peek-modal').classList.remove('hidden');
     }
@@ -1248,16 +885,13 @@
     }
 
     function handleDiffImageClick(event) {
-      if (state.editorActive) return;
-
       const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
       if (!level) return;
 
       const { x: clickX, y: clickY, pxX, pxY } = getRelativePercentCoords(event.clientX, event.clientY);
-      const diffs = getLevelDifferences(level);
       const pad = 2.0;
 
-      const hit = diffs.find((d) => (
+      const hit = level.differences.find((d) => (
         clickX >= d.x - pad &&
         clickX <= d.x + d.w + pad &&
         clickY >= d.y - pad &&
@@ -1325,11 +959,10 @@
     function renderMarkers() {
       const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
       if (!level) return;
-      const diffs = getLevelDifferences(level);
       const layer = document.getElementById('markers-layer');
       layer.innerHTML = '';
 
-      diffs.forEach((d) => {
+      level.differences.forEach((d) => {
         if (!state.foundDiffIds.includes(d.id)) return;
         const box = document.createElement('div');
         box.className = 'absolute border-[3.5px] border-rose-500 rounded-xl shadow-[0_0_0_2px_#FFFFFF] animate-pop';
@@ -1350,11 +983,10 @@
     function renderDifferencesChecklist() {
       const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
       if (!level) return;
-      const diffs = getLevelDifferences(level);
       const container = document.getElementById('differences-checklist');
       container.innerHTML = '';
 
-      diffs.forEach((d) => {
+      level.differences.forEach((d) => {
         const isFound = state.foundDiffIds.includes(d.id);
         const item = document.createElement('div');
         item.className = `p-3 rounded-xl border-2 flex items-center gap-2.5 transition-all ${
@@ -1400,292 +1032,6 @@
         saveProgress();
       }
       document.getElementById('win-banner').classList.remove('hidden');
-    }
-
-    function handleCustomImageUpload(event, suffix) {
-      const file = event.target.files && event.target.files[0];
-      const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
-      if (!file || !level) return;
-
-      const fileName = getAssetFilename(level, suffix);
-      const oldUrl = runtimeImageMap.get(fileName);
-      if (oldUrl && oldUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(oldUrl);
-      }
-      const url = URL.createObjectURL(file);
-      runtimeImageMap.set(fileName, url);
-      relativeFailedMap.set(fileName, false);
-      renderSceneImages(level);
-      updateLoadedImagesSummary();
-      showClickFeedback(`✅ 已載入 ${fileName}`, 'text-emerald-700');
-      event.target.value = '';
-    }
-
-    function toggleCoordinateEditor() {
-      state.editorActive = !state.editorActive;
-      state.dragState = null;
-      const btn = document.getElementById('btn-toggle-editor');
-      const controls = document.getElementById('editor-controls');
-      const overlay = document.getElementById('editor-overlay-layer');
-
-      if (state.editorActive) {
-        btn.textContent = '關閉座標校正模式';
-        btn.classList.replace('bg-amber-200', 'bg-rose-400');
-        controls.classList.remove('hidden');
-        overlay.classList.remove('hidden');
-        renderEditorControls();
-        renderEditorOverlay();
-        updateEditorJsonPreview();
-      } else {
-        btn.textContent = '開啟座標校正模式';
-        btn.classList.replace('bg-rose-400', 'bg-amber-200');
-        controls.classList.add('hidden');
-        overlay.classList.add('hidden');
-      }
-    }
-
-    function renderEditorControls() {
-      const container = document.getElementById('editor-target-buttons');
-      container.innerHTML = '';
-      for (let i = 1; i <= 6; i++) {
-        const b = document.createElement('button');
-        b.className = `px-3 py-1 rounded-lg text-xs font-black border-2 border-[#3D352E] ${
-          state.editorSelectedDiffId === i ? 'bg-rose-500 text-white' : 'bg-stone-100 text-stone-800'
-        }`;
-        b.textContent = `差異 #${i}`;
-        b.onclick = () => {
-          state.editorSelectedDiffId = i;
-          renderEditorControls();
-          renderEditorOverlay();
-        };
-        container.appendChild(b);
-      }
-    }
-
-    function renderEditorOverlay() {
-      const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
-      if (!level) return;
-      const diffs = getLevelDifferences(level);
-      const overlay = document.getElementById('editor-overlay-layer');
-      overlay.innerHTML = '';
-
-      diffs.forEach((d) => {
-        const isSelected = d.id === state.editorSelectedDiffId;
-        const box = document.createElement('div');
-        box.className = `absolute border-2 flex items-center justify-center text-xs font-black cursor-move ${
-          isSelected
-            ? 'border-amber-300 bg-amber-300/35 text-white z-10'
-            : 'border-white/80 bg-white/20 text-white'
-        }`;
-        box.style.left = `${d.x}%`;
-        box.style.top = `${d.y}%`;
-        box.style.width = `${d.w}%`;
-        box.style.height = `${d.h}%`;
-        box.textContent = d.id;
-        overlay.appendChild(box);
-      });
-
-      if (state.dragState && state.dragState.mode === 'draw') {
-        const { startX, startY, curX, curY } = state.dragState;
-        const left = Math.min(startX, curX);
-        const top = Math.min(startY, curY);
-        const width = Math.abs(curX - startX);
-        const height = Math.abs(curY - startY);
-
-        const draft = document.createElement('div');
-        draft.className = 'absolute border-2 border-dashed border-emerald-300 bg-emerald-300/25 pointer-events-none z-20';
-        draft.style.left = `${left}%`;
-        draft.style.top = `${top}%`;
-        draft.style.width = `${width}%`;
-        draft.style.height = `${height}%`;
-        overlay.appendChild(draft);
-      }
-    }
-
-    function beginEditorPointer(clientX, clientY) {
-      if (!state.editorActive) return;
-      const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
-      if (!level) return;
-      const pt = getRelativePercentCoords(clientX, clientY);
-      const diffs = getLevelDifferences(level);
-
-      const clickedBox = diffs.find((d) => (
-        pt.x >= d.x && pt.x <= d.x + d.w && pt.y >= d.y && pt.y <= d.y + d.h
-      ));
-
-      if (clickedBox) {
-        state.editorSelectedDiffId = clickedBox.id;
-        renderEditorControls();
-        state.dragState = {
-          mode: 'move',
-          targetId: clickedBox.id,
-          offsetX: pt.x - clickedBox.x,
-          offsetY: pt.y - clickedBox.y,
-          w: clickedBox.w,
-          h: clickedBox.h
-        };
-      } else {
-        state.dragState = {
-          mode: 'draw',
-          targetId: state.editorSelectedDiffId,
-          startX: pt.x,
-          startY: pt.y,
-          curX: pt.x,
-          curY: pt.y
-        };
-      }
-      renderEditorOverlay();
-    }
-
-    function moveEditorPointer(clientX, clientY) {
-      if (!state.editorActive || !state.dragState) return;
-      const pt = getRelativePercentCoords(clientX, clientY);
-      const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
-      if (!level) return;
-
-      if (state.dragState.mode === 'move') {
-        const nx = Math.max(0, Math.min(100 - state.dragState.w, Math.round((pt.x - state.dragState.offsetX) * 10) / 10));
-        const ny = Math.max(0, Math.min(100 - state.dragState.h, Math.round((pt.y - state.dragState.offsetY) * 10) / 10));
-        commitBoxCoords(level, state.dragState.targetId, nx, ny, state.dragState.w, state.dragState.h, false);
-      } else if (state.dragState.mode === 'draw') {
-        state.dragState.curX = pt.x;
-        state.dragState.curY = pt.y;
-        renderEditorOverlay();
-      }
-    }
-
-    function endEditorPointer(clientX, clientY) {
-      if (!state.editorActive || !state.dragState) return;
-      const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
-      if (!level) {
-        state.dragState = null;
-        return;
-      }
-
-      if (state.dragState.mode === 'draw') {
-        const pt = clientX != null ? getRelativePercentCoords(clientX, clientY) : { x: state.dragState.curX, y: state.dragState.curY };
-        const rawW = Math.abs(pt.x - state.dragState.startX);
-        const rawH = Math.abs(pt.y - state.dragState.startY);
-        const diffs = getLevelDifferences(level);
-        const cur = diffs.find((d) => d.id === state.dragState.targetId) || { w: 12, h: 12 };
-
-        if (rawW < 1.5 && rawH < 1.5) {
-          const nx = Math.max(0, Math.min(100 - cur.w, Math.round((pt.x - cur.w / 2) * 10) / 10));
-          const ny = Math.max(0, Math.min(100 - cur.h, Math.round((pt.y - cur.h / 2) * 10) / 10));
-          commitBoxCoords(level, state.dragState.targetId, nx, ny, cur.w, cur.h, true);
-        } else {
-          const x = Math.round(Math.min(state.dragState.startX, pt.x) * 10) / 10;
-          const y = Math.round(Math.min(state.dragState.startY, pt.y) * 10) / 10;
-          const w = Math.max(2, Math.round(rawW * 10) / 10);
-          const h = Math.max(2, Math.round(rawH * 10) / 10);
-          commitBoxCoords(level, state.dragState.targetId, x, y, w, h, true);
-        }
-      } else {
-        updateEditorJsonPreview();
-        renderMarkers();
-      }
-
-      state.dragState = null;
-      renderEditorOverlay();
-    }
-
-    function commitBoxCoords(level, diffId, x, y, w, h, refreshAll) {
-      const diffs = getLevelDifferences(level);
-      const idx = diffs.findIndex((d) => d.id === diffId);
-      if (idx === -1) return;
-      diffs[idx] = { ...diffs[idx], x, y, w, h };
-
-      state.customCoords[level.id] = diffs.map(({ id, x: bx, y: by, w: bw, h: bh }) => ({
-        id, x: bx, y: by, w: bw, h: bh
-      }));
-      saveCustomCoords();
-
-      if (refreshAll) {
-        renderEditorOverlay();
-        renderMarkers();
-        updateEditorJsonPreview();
-        showClickFeedback(`📐 已更新差異 #${diffId}：(${x}%, ${y}%, ${w}%, ${h}%)`, 'text-amber-800');
-      } else {
-        renderEditorOverlay();
-      }
-    }
-
-    function updateEditorJsonPreview() {
-      const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
-      if (!level) return;
-      const diffs = getLevelDifferences(level).map(({ id, text, x, y, w, h }) => ({ id, text, x, y, w, h }));
-      document.getElementById('editor-json-preview').textContent = JSON.stringify({
-        levelId: level.id,
-        title: level.title,
-        images: [getAssetFilename(level, 'a'), getAssetFilename(level, 'b')],
-        differences: diffs
-      }, null, 2);
-    }
-
-    function copyLevelCoordinatesJSON() {
-      const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
-      if (!level) return;
-      const diffs = getLevelDifferences(level).map(({ id, text, x, y, w, h }) => ({ id, text, x, y, w, h }));
-      const jsonText = JSON.stringify({
-        levelId: level.id,
-        title: level.title,
-        images: [getAssetFilename(level, 'a'), getAssetFilename(level, 'b')],
-        differences: diffs
-      }, null, 2);
-
-      const ta = document.createElement('textarea');
-      ta.value = jsonText;
-      document.body.appendChild(ta);
-      ta.select();
-      try {
-        document.execCommand('copy');
-        showClickFeedback('📋 已複製本關座標 JSON 至剪貼簿！', 'text-emerald-700');
-      } catch (e) {
-        showClickFeedback('⚠️ 無法自動複製，請手動選取下方 JSON', 'text-rose-600');
-      }
-      document.body.removeChild(ta);
-    }
-
-    function handleEditorMouseDown(e) {
-      if (!state.editorActive) return;
-      e.stopPropagation();
-      beginEditorPointer(e.clientX, e.clientY);
-    }
-    function handleEditorMouseMove(e) {
-      if (!state.editorActive || !state.dragState) return;
-      moveEditorPointer(e.clientX, e.clientY);
-    }
-    function handleEditorMouseUp(e) {
-      if (!state.editorActive || !state.dragState) return;
-      endEditorPointer(e.clientX, e.clientY);
-    }
-    function handleEditorTouchStart(e) {
-      if (!state.editorActive || !e.touches || !e.touches[0]) return;
-      e.preventDefault();
-      beginEditorPointer(e.touches[0].clientX, e.touches[0].clientY);
-    }
-    function handleEditorTouchMove(e) {
-      if (!state.editorActive || !state.dragState || !e.touches || !e.touches[0]) return;
-      e.preventDefault();
-      moveEditorPointer(e.touches[0].clientX, e.touches[0].clientY);
-    }
-    function handleEditorTouchEnd(e) {
-      if (!state.editorActive || !state.dragState) return;
-      const t = e.changedTouches && e.changedTouches[0];
-      endEditorPointer(t ? t.clientX : null, t ? t.clientY : null);
-    }
-
-    function resetLevelCustomData() {
-      if (!state.currentLevelId) return;
-      delete state.customCoords[state.currentLevelId];
-      saveCustomCoords();
-      renderMarkers();
-      renderDifferencesChecklist();
-      if (state.editorActive) {
-        renderEditorOverlay();
-        updateEditorJsonPreview();
-      }
-      showClickFeedback('↺ 已還原本關預設座標', 'text-sky-700');
     }
 
     function openResetModal() {
