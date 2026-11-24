@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>高小找不同遊戲｜12 題互動挑戰</title>
+  <title>找不同遊戲｜12 題互動挑戰</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
@@ -81,7 +81,7 @@
           🔍
         </div>
         <div>
-          <h1 class="text-lg sm:text-xl font-black tracking-tight text-[#2D2A26] leading-tight">高小找不同遊戲</h1>
+          <h1 class="text-lg sm:text-xl font-black tracking-tight text-[#2D2A26] leading-tight">找不同遊戲</h1>
           <p class="text-xs text-stone-500 hidden sm:block">1_a.png～12_b.png 雙模式觀察與記憶挑戰（全 12 題）</p>
         </div>
       </div>
@@ -153,7 +153,7 @@
           <div class="space-y-1">
             <div class="flex flex-wrap items-center gap-2">
               <span class="px-2.5 py-0.5 rounded-lg bg-sky-200 border-2 border-[#3D352E] text-xs font-black">🖼️ 圖片載入狀態</span>
-              <span id="loaded-images-summary" class="text-xs sm:text-sm font-black text-stone-800">偵測中...</span>
+              <span id="loaded-images-summary" class="text-xs sm:text-sm font-black text-stone-800">已設定自動讀取同資料夾 1_a.png～12_b.png</span>
             </div>
             <p class="text-xs text-stone-600">
               網站會自動讀取同資料夾下的 <code class="bg-stone-100 px-1.5 py-0.5 rounded font-bold">1_a.png</code>～<code class="bg-stone-100 px-1.5 py-0.5 rounded font-bold">12_b.png</code>；若在本機測試或需臨時載入，也可拖曳或選取 <code class="bg-amber-100 px-1.5 py-0.5 rounded font-bold text-amber-950">.zip</code> 壓縮檔或 <code class="bg-stone-100 px-1.5 py-0.5 rounded font-bold">.png</code> 圖片。
@@ -296,4 +296,1423 @@
           <button onclick="goHome()" class="storybook-btn bg-white hover:bg-stone-100 px-4 py-2 rounded-xl text-xs sm:text-sm font-black">
             🏠 返回主頁
           </button>
-          <button
+          <button onclick="goToNextLevel()" class="storybook-btn bg-emerald-400 hover:bg-emerald-500 text-stone-950 px-4 py-2 rounded-xl text-xs sm:text-sm font-black">
+            下一關 ▶
+          </button>
+        </div>
+      </div>
+
+      <!-- 簡易版手機快速切換列 -->
+      <div id="mobile-compare-tabs" class="grid md:hidden grid-cols-2 gap-2 bg-stone-200/80 p-1.5 rounded-2xl border-2 border-[#3D352E]">
+        <button id="tab-show-both" onclick="setMobileView('both')" class="py-1.5 rounded-lg text-xs font-black bg-white shadow">
+          雙圖對照
+        </button>
+        <button id="tab-show-diff" onclick="setMobileView('diff')" class="py-1.5 rounded-lg text-xs font-bold text-stone-700">
+          專注找不同（改動圖）
+        </button>
+      </div>
+
+      <!-- 雙圖遊戲主舞台 -->
+      <div id="boards-wrapper" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        <!-- 左側／上方：原圖面板 -->
+        <div id="original-panel" class="storybook-card p-3 sm:p-4 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span id="original-panel-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-sky-100 border-2 border-[#3D352E] text-xs sm:text-sm font-black text-sky-950">
+              🖼️ 原圖（_a.png）
+            </span>
+            <span id="original-hint-tag" class="text-xs font-bold text-stone-500">請仔細觀察畫面細節</span>
+          </div>
+          <div id="original-canvas-box" class="scene-aspect bg-stone-900/5"></div>
+        </div>
+
+        <!-- 右側／下方：改動圖互動點擊面板 -->
+        <div id="diff-panel" class="storybook-card p-3 sm:p-4 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span id="diff-panel-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-rose-100 border-2 border-[#3D352E] text-xs sm:text-sm font-black text-rose-950">
+              🎯 改動圖（_b.png，點擊找出 6 處不同）
+            </span>
+            <span id="click-feedback-msg" class="text-xs font-black text-rose-600 h-4"></span>
+          </div>
+          <div id="diff-canvas-box" class="scene-aspect cursor-crosshair bg-stone-900/5"
+               onclick="handleDiffImageClick(event)"
+               onmousedown="handleEditorMouseDown(event)"
+               onmousemove="handleEditorMouseMove(event)"
+               onmouseup="handleEditorMouseUp(event)"
+               ontouchstart="handleEditorTouchStart(event)"
+               ontouchmove="handleEditorTouchMove(event)"
+               ontouchend="handleEditorTouchEnd(event)">
+            <div id="diff-image-layer" class="w-full h-full"></div>
+            <div id="markers-layer" class="absolute inset-0 pointer-events-none"></div>
+            <div id="editor-overlay-layer" class="hidden absolute inset-0 bg-black/25"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 下方：6 處不同點清單（逐一解鎖差異說明） -->
+      <div class="storybook-card p-4 sm:p-5 space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-base sm:text-lg font-black text-[#2D2A26]">📋 本關 6 處不同點發現紀錄</h3>
+          <span class="text-xs sm:text-sm font-black text-rose-700">已找到 <span id="game-found-num">0</span> / 6 處</span>
+        </div>
+        <div id="differences-checklist" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
+      </div>
+
+      <!-- 座標校正模式與單張圖片替換面板 -->
+      <details id="calibration-details" class="storybook-card p-4 bg-stone-50">
+        <summary class="cursor-pointer font-black text-sm sm:text-base text-stone-800 flex items-center justify-between">
+          <span>📐 座標校正模式與圖片載入設定（拖曳／點選調整 6 個差異框並複製 JSON）</span>
+          <span class="text-xs font-bold text-stone-500 bg-white px-2.5 py-1 rounded-lg border border-stone-300">點擊展開 / 收合</span>
+        </summary>
+        <div class="mt-4 pt-4 border-t-2 border-stone-200 space-y-4 text-sm">
+          <div class="bg-white p-3.5 rounded-xl border-2 border-stone-300 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <div class="font-black text-stone-800">座標校正模式開關</div>
+                <p class="text-xs text-stone-600">開啟後可在改動圖上<strong>拖曳框選</strong>或<strong>點選定位</strong>調整 1～6 號差異框的百分比座標（x, y, w, h），並一鍵複製 JSON。</p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <button id="btn-toggle-editor" onclick="toggleCoordinateEditor()" class="storybook-btn bg-amber-200 hover:bg-amber-300 px-3.5 py-1.5 rounded-xl text-xs font-black">
+                  開啟座標校正模式
+                </button>
+                <button onclick="copyLevelCoordinatesJSON()" class="storybook-btn bg-emerald-200 hover:bg-emerald-300 text-emerald-950 px-3.5 py-1.5 rounded-xl text-xs font-black">
+                  📋 複製本關 JSON
+                </button>
+                <button onclick="resetLevelCustomData()" class="storybook-btn bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-xl text-xs font-bold text-rose-700">
+                  ↺ 還原本關預設座標
+                </button>
+              </div>
+            </div>
+
+            <div id="editor-controls" class="hidden space-y-3 pt-2 border-t border-stone-200">
+              <div class="flex flex-wrap items-center gap-2" id="editor-target-buttons"></div>
+              <pre id="editor-json-preview" class="bg-stone-900 text-emerald-300 p-3 rounded-xl text-xs overflow-x-auto font-mono"></pre>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-white p-3.5 rounded-xl border-2 border-stone-300 space-y-2">
+              <div id="single-orig-label" class="font-bold text-stone-800">替換本題原圖（_a.png）</div>
+              <input type="file" accept=".png,image/png" onchange="handleCustomImageUpload(event, 'a')" class="block w-full text-xs text-stone-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-2 file:border-[#3D352E] file:font-bold file:bg-sky-100 hover:file:bg-sky-200 cursor-pointer" />
+            </div>
+            <div class="bg-white p-3.5 rounded-xl border-2 border-stone-300 space-y-2">
+              <div id="single-diff-label" class="font-bold text-stone-800">替換本題改動圖（_b.png）</div>
+              <input type="file" accept=".png,image/png" onchange="handleCustomImageUpload(event, 'b')" class="block w-full text-xs text-stone-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-2 file:border-[#3D352E] file:font-bold file:bg-rose-100 hover:file:bg-rose-200 cursor-pointer" />
+            </div>
+          </div>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <!-- 難度版「偷看原圖」彈出視窗（不限次數） -->
+  <div id="peek-modal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
+    <div class="storybook-card bg-white max-w-4xl w-full p-4 sm:p-6 space-y-4 animate-pop">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span class="px-3 py-1 rounded-lg bg-amber-300 border-2 border-[#3D352E] text-xs sm:text-sm font-black">👁️ 偷看原圖（不限次數）</span>
+          <span id="peek-modal-title" class="font-bold text-sm sm:text-base text-stone-700"></span>
+        </div>
+        <button onclick="closePeekModal()" class="storybook-btn bg-rose-500 hover:bg-rose-600 text-white px-4 py-1.5 rounded-xl text-sm font-black">
+          ✕ 關閉原圖
+        </button>
+      </div>
+      <div id="peek-modal-canvas" class="scene-aspect bg-stone-100"></div>
+    </div>
+  </div>
+
+  <!-- 隨時載入 ZIP / PNG 彈出視窗 -->
+  <div id="zip-upload-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="storybook-card bg-white max-w-lg w-full p-5 sm:p-6 space-y-4 animate-pop"
+         ondragover="handleDropzoneDragOver(event)"
+         ondragleave="handleDropzoneDragLeave(event)"
+         ondrop="handleDropzoneDrop(event)">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-black text-[#2D2A26]">📦 載入 ZIP 壓縮檔或 PNG 圖片</h3>
+        <button onclick="closeZipUploadModal()" class="storybook-btn bg-stone-100 hover:bg-stone-200 px-3 py-1 rounded-xl text-xs font-black">✕ 關閉</button>
+      </div>
+      <p class="text-xs sm:text-sm text-stone-600">
+        可直接拖曳 <code class="bg-amber-100 px-1.5 py-0.5 rounded font-bold">1_a.png</code>～<code class="bg-amber-100 px-1.5 py-0.5 rounded font-bold">12_b.png</code> 或 <code class="bg-amber-100 px-1.5 py-0.5 rounded font-bold">.zip</code> 到此視窗，或點擊下方按鈕選取檔案。
+      </p>
+      <div id="modal-upload-status" class="p-3 rounded-xl bg-sky-50 border-2 border-sky-200 text-xs font-black text-sky-900">
+        目前狀態：已設定自動讀取同資料夾 1_a.png～12_b.png
+      </div>
+      <div class="flex flex-wrap gap-2 justify-end">
+        <label class="storybook-btn bg-amber-300 hover:bg-amber-400 text-stone-950 px-4 py-2 rounded-xl text-xs sm:text-sm font-black cursor-pointer">
+          🗜️ 選擇 ZIP 檔案
+          <input type="file" accept=".zip,application/zip,application/x-zip-compressed" onchange="handleZipOrFilesSelected(event)" class="hidden" />
+        </label>
+        <label class="storybook-btn bg-sky-200 hover:bg-sky-300 text-sky-950 px-4 py-2 rounded-xl text-xs sm:text-sm font-black cursor-pointer">
+          📂 多選 PNG 圖片
+          <input type="file" accept=".png,image/png" multiple onchange="handleZipOrFilesSelected(event)" class="hidden" />
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- 重置全部進度確認視窗 -->
+  <div id="reset-modal" class="hidden fixed inset-0 z-50 bg-black/65 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="storybook-card bg-white max-w-md w-full p-5 space-y-4 animate-pop">
+      <h3 class="text-lg font-black text-[#2D2A26]">⚠️ 確認重置全部通關進度？</h3>
+      <p class="text-sm text-stone-600">這會清除所有 12 關的通關紀錄，但不會清除自訂校正的座標。</p>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeResetModal()" class="storybook-btn bg-stone-100 hover:bg-stone-200 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold">取消</button>
+        <button onclick="confirmResetProgress()" class="storybook-btn bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-black">確定重置</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const LEVELS_DATA = [
+      {
+        id: 1, mode: 'easy', stageLabel: '關卡一', title: '野餐日', themeEmoji: '🧺',
+        imagePrefix: '1',
+        differences: [
+          { id: 1, text: '爸爸的上衣變紫色', x: 67.5, y: 36.5, w: 24.5, h: 31.5 },
+          { id: 2, text: '皮球變成藍色', x: 64.5, y: 81.5, w: 11.5, h: 17.0 },
+          { id: 3, text: '杯中飲品變成粉紅色', x: 43.0, y: 77.5, w: 7.0, h: 17.5 },
+          { id: 4, text: '左上角的白雲消失了', x: 0.5, y: 3.5, w: 16.5, h: 17.5 },
+          { id: 5, text: '野餐盒蓋多了一條白色橫紋', x: 44.5, y: 88.0, w: 14.5, h: 5.5 },
+          { id: 6, text: '小狗身上多了一個啡色斑點', x: 81.5, y: 77.5, w: 6.5, h: 8.5 }
+        ]
+      },
+      {
+        id: 2, mode: 'easy', stageLabel: '關卡二', title: '海灘午後', themeEmoji: '🏖️',
+        imagePrefix: '2',
+        differences: [
+          { id: 1, text: '太陽傘的黃格變紫色', x: 5.5, y: 1.0, w: 22.0, h: 25.5 },
+          { id: 2, text: '水桶的黃色提手變成綠色', x: 1.0, y: 74.5, w: 15.5, h: 16.5 },
+          { id: 3, text: '鏟子由藍變橙紅', x: 30.5, y: 72.0, w: 9.5, h: 16.0 },
+          { id: 4, text: '沙堡中央的小窗消失了', x: 47.0, y: 54.0, w: 6.5, h: 10.5 },
+          { id: 5, text: '皮球的紅格變紫色', x: 79.5, y: 73.5, w: 10.0, h: 24.0 },
+          { id: 6, text: '沙堡前的貝殼消失了', x: 40.0, y: 87.5, w: 14.5, h: 11.5 }
+        ]
+      },
+      {
+        id: 3, mode: 'easy', stageLabel: '關卡三', title: '運動用品店', themeEmoji: '🎾',
+        imagePrefix: '3',
+        differences: [
+          { id: 1, text: '籃球一格由橙變紫', x: 14.5, y: 69.0, w: 9.5, h: 8.0 },
+          { id: 2, text: '右上方球拍框變綠', x: 65.0, y: 1.0, w: 15.0, h: 30.5 },
+          { id: 3, text: '滑板一段由黃變藍', x: 82.0, y: 28.5, w: 12.5, h: 22.0 },
+          { id: 4, text: '鞋盒正面的兩條白斜紋變成一條', x: 45.0, y: 83.5, w: 13.5, h: 14.5 },
+          { id: 5, text: '收銀機一塊面板變淺綠', x: 79.5, y: 72.5, w: 17.5, h: 14.0 },
+          { id: 6, text: '左邊小球拍變藍色', x: 11.0, y: 51.0, w: 8.5, h: 14.5 }
+        ]
+      },
+      {
+        id: 4, mode: 'easy', stageLabel: '關卡四', title: '文具部', themeEmoji: '✏️',
+        imagePrefix: '4',
+        differences: [
+          { id: 1, text: '左上方筆記簿由紅變綠', x: 8.0, y: 1.0, w: 15.5, h: 28.5 },
+          { id: 2, text: '花盆由粉紅變藍', x: 86.5, y: 17.0, w: 11.0, h: 12.5 },
+          { id: 3, text: '店員圍裙上的名牌消失了', x: 64.5, y: 54.0, w: 9.5, h: 9.0 },
+          { id: 4, text: '尺由黃色變成淺綠色', x: 72.5, y: 85.5, w: 25.5, h: 9.0 },
+          { id: 5, text: '筆記簿右頁只剩一條橫線', x: 45.0, y: 38.0, w: 12.5, h: 21.5 },
+          { id: 6, text: '盒蓋的粉紅色邊變成深紫色', x: 85.5, y: 69.0, w: 13.5, h: 12.0 }
+        ]
+      },
+      {
+        id: 5, mode: 'easy', stageLabel: '關卡五', title: '甜品店', themeEmoji: '🍰',
+        imagePrefix: '5',
+        differences: [
+          { id: 1, text: '廚師帽由白色變淡紫', x: 9.5, y: 0.5, w: 23.5, h: 21.0 },
+          { id: 2, text: '女孩的蝴蝶結由粉紅變藍', x: 91.5, y: 33.5, w: 7.5, h: 19.5 },
+          { id: 3, text: '右邊蛋糕的啡色糖霜變粉紅', x: 47.5, y: 63.5, w: 21.5, h: 13.5 },
+          { id: 4, text: '禮物盒的紅絲帶變綠', x: 87.5, y: 14.5, w: 4.5, h: 12.5 },
+          { id: 5, text: '右邊杯子蛋糕的綠色糖霜變粉紅', x: 67.5, y: 61.5, w: 6.5, h: 17.0 },
+          { id: 6, text: '中間杯子蛋糕的紙托有一格變紫', x: 52.5, y: 88.0, w: 3.5, h: 8.5 }
+        ]
+      },
+      {
+        id: 6, mode: 'easy', stageLabel: '關卡六', title: '露營基地', themeEmoji: '⛺',
+        imagePrefix: '6',
+        differences: [
+          { id: 1, text: '圓月變成彎月', x: 60.0, y: 0.5, w: 12.5, h: 19.0 },
+          { id: 2, text: '營帳頂的旗由紅變紫', x: 26.5, y: 1.5, w: 10.5, h: 9.0 },
+          { id: 3, text: '背囊由紅色變成藍色', x: 87.5, y: 61.5, w: 8.5, h: 10.0 },
+          { id: 4, text: '男孩的藍帽變紫', x: 66.0, y: 23.0, w: 22.0, h: 22.5 },
+          { id: 5, text: '杯子由藍色變粉紅色', x: 54.0, y: 40.5, w: 8.5, h: 12.0 },
+          { id: 6, text: '營帳左側一條橙紋變青綠', x: 0.5, y: 17.5, w: 15.5, h: 34.5 }
+        ]
+      },
+      {
+        id: 7, mode: 'hard', stageLabel: '關卡一', title: '太空探索', themeEmoji: '🚀',
+        imagePrefix: '7',
+        differences: [
+          { id: 1, text: '火箭頂由紅色變紫色', x: 9.5, y: 0.5, w: 16.0, h: 12.5 },
+          { id: 2, text: '工具箱蓋由橙色變綠色', x: 5.5, y: 70.0, w: 15.0, h: 16.5 },
+          { id: 3, text: '右邊紅色行星變杏色', x: 84.5, y: 11.5, w: 11.5, h: 18.0 },
+          { id: 4, text: '探測車前少了一盞燈', x: 59.0, y: 71.5, w: 7.5, h: 9.0 },
+          { id: 5, text: '火箭左上方的一顆星消失了', x: 1.0, y: 1.0, w: 6.5, h: 9.5 },
+          { id: 6, text: '旗的黃色底變綠色', x: 91.5, y: 31.5, w: 6.5, h: 9.5 }
+        ]
+      },
+      {
+        id: 8, mode: 'hard', stageLabel: '關卡二', title: '海底世界', themeEmoji: '🐠',
+        imagePrefix: '8',
+        differences: [
+          { id: 1, text: '小丑魚的臉由橙色變珊瑚紅', x: 21.0, y: 7.5, w: 8.5, h: 21.5 },
+          { id: 2, text: '潛水艇中段由黃變綠', x: 51.0, y: 20.5, w: 16.5, h: 41.5 },
+          { id: 3, text: '寶箱正面變成紫色', x: 25.0, y: 80.5, w: 17.5, h: 14.0 },
+          { id: 4, text: '小丑魚右上方少了一個氣泡', x: 31.0, y: 1.5, w: 6.0, h: 9.5 },
+          { id: 5, text: '海龜的龜殼由綠色變啡色', x: 71.0, y: 63.0, w: 22.0, h: 16.5 },
+          { id: 6, text: '左下方的海星由橙色變粉紅', x: 2.5, y: 80.5, w: 12.5, h: 17.5 }
+        ]
+      },
+      {
+        id: 9, mode: 'hard', stageLabel: '關卡三', title: '農場日常', themeEmoji: '🐮',
+        imagePrefix: '9',
+        differences: [
+          { id: 1, text: '奶牛身上一塊深色斑變淺啡', x: 1.0, y: 20.5, w: 8.5, h: 16.5 },
+          { id: 2, text: '水桶由灰紫色變天藍色', x: 71.5, y: 68.5, w: 16.5, h: 25.5 },
+          { id: 3, text: '左邊的小雞消失了', x: 1.5, y: 82.5, w: 11.0, h: 16.5 },
+          { id: 4, text: '穀倉左上方的白雲消失了', x: 27.5, y: 0.5, w: 14.5, h: 13.5 },
+          { id: 5, text: '右邊的小雞由黃變橙', x: 43.0, y: 83.5, w: 8.0, h: 13.0 },
+          { id: 6, text: '女孩一隻黃靴變綠色', x: 51.5, y: 82.5, w: 8.5, h: 14.0 }
+        ]
+      },
+      {
+        id: 10, mode: 'hard', stageLabel: '關卡四', title: '秋日森林', themeEmoji: '🍁',
+        imagePrefix: '10',
+        differences: [
+          { id: 1, text: '女孩裙子由粉紅變紫', x: 19.5, y: 67.5, w: 17.0, h: 11.0 },
+          { id: 2, text: '路牌上的箭嘴改為向左', x: 85.0, y: 48.0, w: 14.5, h: 11.5 },
+          { id: 3, text: '樹上小鳥的藍色羽毛變橙紅', x: 76.0, y: 1.5, w: 13.0, h: 18.5 },
+          { id: 4, text: '大蘑菇的傘蓋由紅色變啡色', x: 82.0, y: 71.5, w: 12.5, h: 13.0 },
+          { id: 5, text: '男孩腳旁的一片落葉消失了', x: 41.0, y: 91.0, w: 9.0, h: 8.0 },
+          { id: 6, text: '小狗的頸圈多了一個鈴鐺', x: 67.5, y: 68.0, w: 8.5, h: 13.0 }
+        ]
+      },
+      {
+        id: 11, mode: 'hard', stageLabel: '關卡五', title: '尋寶博物館', themeEmoji: '💎',
+        imagePrefix: '11',
+        differences: [
+          { id: 1, text: '化石後方的紫色展板變成藍綠色', x: 1.0, y: 1.0, w: 32.0, h: 36.0 },
+          { id: 2, text: '風景畫多了一朵小白雲', x: 86.0, y: 8.0, w: 7.0, h: 7.0 },
+          { id: 3, text: '女士一邊衣袖由粉紅變綠', x: 47.5, y: 47.5, w: 10.0, h: 6.0 },
+          { id: 4, text: '化石展板下方的展牌消失了', x: 11.5, y: 38.0, w: 11.5, h: 7.5 },
+          { id: 5, text: '皇冠中央的紅寶石變綠', x: 50.0, y: 77.5, w: 3.5, h: 12.5 },
+          { id: 6, text: '花瓶下的長方形展牌變成橢圓形', x: 46.5, y: 33.5, w: 8.5, h: 6.5 }
+        ]
+      },
+      {
+        id: 12, mode: 'hard', stageLabel: '關卡六', title: '街坊市集', themeEmoji: '🍎',
+        imagePrefix: '12',
+        differences: [
+          { id: 1, text: '屋頂上方的白雲消失了', x: 60.5, y: 0.5, w: 14.5, h: 11.5 },
+          { id: 2, text: '店員手上的蘋果由紅色變綠色', x: 40.5, y: 46.5, w: 8.0, h: 11.5 },
+          { id: 3, text: '右邊菜檔的價錢牌寫上了數字', x: 40.5, y: 60.5, w: 6.5, h: 9.0 },
+          { id: 4, text: '購物袋上的花變紫色', x: 82.5, y: 78.0, w: 6.5, h: 12.5 },
+          { id: 5, text: '右邊房子的屋頂變紫', x: 69.0, y: 6.0, w: 28.5, h: 21.0 },
+          { id: 6, text: '花盆由灰藍色變杏色', x: 0.5, y: 48.0, w: 10.5, h: 17.5 }
+        ]
+      }
+    ];
+
+    const STORAGE_KEY_PROGRESS = 'spot_diff_12q_progress_v1';
+    const STORAGE_KEY_COORDS = 'spot_diff_12q_custom_coords_v1';
+
+    const state = {
+      completedLevels: [],
+      customCoords: {},
+      currentLevelId: null,
+      foundDiffIds: [],
+      hardPhase: 'memorize',
+      timerDuration: 60,
+      timerRemaining: 60,
+      timerRunning: false,
+      timerInterval: null,
+      peekCount: 0,
+      editorActive: false,
+      editorSelectedDiffId: 1,
+      dragState: null
+    };
+
+    const runtimeImageMap = new Map();
+    const relativeFailedMap = new Map();
+
+    let audioCtx = null;
+    function getAudioCtx() {
+      if (!audioCtx) {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (Ctx) audioCtx = new Ctx();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => {});
+      }
+      return audioCtx;
+    }
+
+    function playTone(type) {
+      const ctx = getAudioCtx();
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      if (type === 'correct') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(587.33, now);
+        osc.frequency.setValueAtTime(880, now + 0.09);
+        gain.gain.setValueAtTime(0.16, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+        osc.start(now);
+        osc.stop(now + 0.28);
+      } else if (type === 'wrong') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(190, now);
+        osc.frequency.linearRampToValueAtTime(140, now + 0.18);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      } else if (type === 'alarm') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(740, now);
+        osc.frequency.setValueAtTime(740, now + 0.16);
+        osc.frequency.setValueAtTime(987.77, now + 0.32);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+        osc.start(now);
+        osc.stop(now + 0.55);
+      } else if (type === 'win') {
+        [523.25, 659.25, 783.99, 1046.5].forEach((freq, idx) => {
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.connect(g);
+          g.connect(ctx.destination);
+          o.type = 'triangle';
+          o.frequency.setValueAtTime(freq, now + idx * 0.1);
+          g.gain.setValueAtTime(0.16, now + idx * 0.1);
+          g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.32);
+          o.start(now + idx * 0.1);
+          o.stop(now + idx * 0.1 + 0.32);
+        });
+      }
+    }
+
+    function getAssetFilename(level, suffix) {
+      return `${level.imagePrefix}_${suffix}.png`;
+    }
+
+    function getImageSrc(fileName) {
+      if (runtimeImageMap.has(fileName)) {
+        return runtimeImageMap.get(fileName);
+      }
+      return `./${fileName}`;
+    }
+
+    function buildImageElementHtml(level, suffix, extraClass = 'w-full h-full object-contain') {
+      const fileName = getAssetFilename(level, suffix);
+      const roleLabel = suffix === 'a' ? '原圖' : '改動圖';
+      const src = getImageSrc(fileName);
+      const safeFile = fileName.replace(/'/g, "\\'");
+      const safeRole = roleLabel.replace(/'/g, "\\'");
+
+      return `
+        <img
+          src="${src}"
+          alt="${level.stageLabel} ${level.title} ${roleLabel}（${fileName}）"
+          class="${extraClass}"
+          onload="handleImageLoaded('${safeFile}')"
+          onerror="handleImageLoadError(this, '${safeFile}', '${safeRole}')"
+        />
+      `;
+    }
+
+    function buildMissingImagePromptHtml(fileName, roleLabel) {
+      return `
+        <div class="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-amber-50/95 border-2 border-dashed border-amber-500 rounded-xl space-y-2">
+          <div class="text-2xl">🖼️</div>
+          <div class="text-sm sm:text-base font-black text-rose-700">
+            尚未找到 ${fileName}（${roleLabel}）
+          </div>
+          <p class="text-xs text-stone-600 max-w-md">
+            請確認 <strong class="font-mono">${fileName}</strong> 已與 <strong class="font-mono">index.html</strong> 放在同一層，或點擊下方按鈕上傳 ZIP / PNG 圖片。
+          </p>
+          <button type="button" onclick="event.stopPropagation(); openZipUploadModal();"
+                  class="storybook-btn bg-amber-300 hover:bg-amber-400 text-stone-950 px-3 py-1.5 rounded-xl text-xs font-black">
+            📦 載入 ZIP / PNG
+          </button>
+        </div>
+      `;
+    }
+
+    function handleImageLoaded(fileName) {
+      relativeFailedMap.set(fileName, false);
+      updateLoadedImagesSummary();
+    }
+
+    function handleImageLoadError(imgEl, fileName, roleLabel) {
+      relativeFailedMap.set(fileName, true);
+      updateLoadedImagesSummary();
+      if (imgEl && imgEl.parentElement) {
+        imgEl.parentElement.innerHTML = buildMissingImagePromptHtml(fileName, roleLabel);
+      }
+    }
+
+    async function processUploadedFiles(fileList) {
+      if (!fileList || fileList.length === 0) return 0;
+      const validNames = new Set();
+      for (let i = 1; i <= 12; i++) {
+        validNames.add(`${i}_a.png`);
+        validNames.add(`${i}_b.png`);
+      }
+
+      let matchedCount = 0;
+      const summary = document.getElementById('loaded-images-summary');
+      const modalStatus = document.getElementById('modal-upload-status');
+
+      for (const file of Array.from(fileList)) {
+        const lowerName = (file.name || '').toLowerCase();
+        if (lowerName.endsWith('.zip')) {
+          if (typeof JSZip === 'undefined') {
+            if (summary) summary.textContent = '⚠️ JSZip 載入失敗，請改用「多選 PNG 圖片」上傳解壓縮後的 24 張 PNG';
+            continue;
+          }
+          try {
+            if (summary) {
+              summary.textContent = `⏳ 正在解壓縮 ${file.name}，請稍候...`;
+              summary.className = 'text-xs sm:text-sm font-black text-amber-800';
+            }
+            if (modalStatus) modalStatus.textContent = `⏳ 正在解壓縮 ${file.name}...`;
+
+            const zip = await JSZip.loadAsync(file);
+            const entries = Object.values(zip.files);
+            for (const entry of entries) {
+              if (entry.dir) continue;
+              const baseName = entry.name.split('/').pop().split('\\').pop().toLowerCase();
+              if (validNames.has(baseName)) {
+                const blob = await entry.async('blob');
+                const pngBlob = new Blob([blob], { type: 'image/png' });
+                const oldUrl = runtimeImageMap.get(baseName);
+                if (oldUrl && oldUrl.startsWith('blob:')) {
+                  URL.revokeObjectURL(oldUrl);
+                }
+                const url = URL.createObjectURL(pngBlob);
+                runtimeImageMap.set(baseName, url);
+                relativeFailedMap.set(baseName, false);
+                matchedCount++;
+              }
+            }
+          } catch (err) {
+            console.error('解壓縮 ZIP 失敗:', err);
+            if (summary) summary.textContent = `❌ 解壓縮 ${file.name} 失敗，請確認檔案為有效 ZIP 格式`;
+          }
+        } else {
+          const baseName = lowerName.split('/').pop().split('\\').pop();
+          if (validNames.has(baseName)) {
+            const oldUrl = runtimeImageMap.get(baseName);
+            if (oldUrl && oldUrl.startsWith('blob:')) {
+              URL.revokeObjectURL(oldUrl);
+            }
+            const url = URL.createObjectURL(file);
+            runtimeImageMap.set(baseName, url);
+            relativeFailedMap.set(baseName, false);
+            matchedCount++;
+          }
+        }
+      }
+
+      updateLoadedImagesSummary();
+      if (!document.getElementById('view-home').classList.contains('hidden')) {
+        renderHomeMenu();
+      } else if (state.currentLevelId) {
+        const curLevel = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
+        if (curLevel) renderSceneImages(curLevel);
+      }
+      if (runtimeImageMap.size === 24) {
+        closeZipUploadModal();
+      }
+      return matchedCount;
+    }
+
+    async function handleZipOrFilesSelected(event) {
+      const files = event.target.files;
+      await processUploadedFiles(files);
+      event.target.value = '';
+    }
+
+    function handleDropzoneDragOver(event) {
+      event.preventDefault();
+      const dz = document.getElementById('asset-loader-dropzone');
+      if (dz) dz.classList.add('bg-amber-100/70');
+    }
+
+    function handleDropzoneDragLeave(event) {
+      event.preventDefault();
+      const dz = document.getElementById('asset-loader-dropzone');
+      if (dz) dz.classList.remove('bg-amber-100/70');
+    }
+
+    async function handleDropzoneDrop(event) {
+      event.preventDefault();
+      const dz = document.getElementById('asset-loader-dropzone');
+      if (dz) dz.classList.remove('bg-amber-100/70');
+      const files = event.dataTransfer && event.dataTransfer.files;
+      await processUploadedFiles(files);
+    }
+
+    function openZipUploadModal() {
+      updateLoadedImagesSummary();
+      document.getElementById('zip-upload-modal').classList.remove('hidden');
+    }
+
+    function closeZipUploadModal() {
+      document.getElementById('zip-upload-modal').classList.add('hidden');
+    }
+
+    function updateLoadedImagesSummary() {
+      const el = document.getElementById('loaded-images-summary');
+      const modalStatus = document.getElementById('modal-upload-status');
+      const cached = runtimeImageMap.size;
+      const failedCount = Array.from(relativeFailedMap.values()).filter(Boolean).length;
+
+      let text = '';
+      let cls = '';
+      if (cached === 24) {
+        text = '✅ 已載入 24 / 24 張原圖與改動圖（1_a.png～12_b.png）';
+        cls = 'text-xs sm:text-sm font-black text-emerald-700';
+      } else if (cached > 0) {
+        text = `📦 已快取 ${cached} / 24 張圖片（其餘自動讀取 ./檔名）`;
+        cls = 'text-xs sm:text-sm font-black text-sky-800';
+      } else if (failedCount > 0) {
+        text = `⚠️ 有 ${failedCount} 張圖片尚未載入（請確認同層有 1_a.png～12_b.png 或上傳 ZIP / PNG）`;
+        cls = 'text-xs sm:text-sm font-black text-rose-700';
+      } else {
+        text = '✅ 已設定自動讀取同資料夾 ./1_a.png～./12_b.png';
+        cls = 'text-xs sm:text-sm font-black text-emerald-800';
+      }
+
+      if (el) {
+        el.textContent = text;
+        el.className = cls;
+      }
+      if (modalStatus) {
+        modalStatus.textContent = `目前進度：已快取 ${cached} / 24 張圖片，其餘自動讀取 ./檔名`;
+      }
+    }
+
+    function loadPersistedState() {
+      try {
+        const savedProg = localStorage.getItem(STORAGE_KEY_PROGRESS);
+        if (savedProg) state.completedLevels = JSON.parse(savedProg);
+        const savedCoords = localStorage.getItem(STORAGE_KEY_COORDS);
+        if (savedCoords) state.customCoords = JSON.parse(savedCoords);
+      } catch (e) {
+        console.warn('讀取進度失敗', e);
+      }
+    }
+
+    function saveProgress() {
+      try {
+        localStorage.setItem(STORAGE_KEY_PROGRESS, JSON.stringify(state.completedLevels));
+      } catch (e) {}
+    }
+
+    function saveCustomCoords() {
+      try {
+        localStorage.setItem(STORAGE_KEY_COORDS, JSON.stringify(state.customCoords));
+      } catch (e) {}
+    }
+
+    function getLevelDifferences(level) {
+      const customList = state.customCoords[level.id];
+      return level.differences.map((d, idx) => {
+        if (customList && customList[idx]) {
+          return { ...d, ...customList[idx] };
+        }
+        return { ...d };
+      });
+    }
+
+    function renderHomeMenu() {
+      const easyGrid = document.getElementById('easy-level-grid');
+      const hardGrid = document.getElementById('hard-level-grid');
+      if (!easyGrid || !hardGrid) return;
+      easyGrid.innerHTML = '';
+      hardGrid.innerHTML = '';
+
+      let easyDone = 0;
+      let hardDone = 0;
+
+      LEVELS_DATA.forEach((level) => {
+        const isDone = state.completedLevels.includes(level.id);
+        if (isDone) {
+          if (level.mode === 'easy') easyDone++;
+          else hardDone++;
+        }
+
+        const card = document.createElement('div');
+        card.className = `storybook-card p-4 flex flex-col justify-between gap-3 cursor-pointer hover:-translate-y-1 transition-transform ${isDone ? 'bg-emerald-50/70' : 'bg-white'}`;
+        card.onclick = () => startLevel(level.id);
+
+        const modeColor = level.mode === 'easy'
+          ? 'bg-emerald-200 text-emerald-950'
+          : 'bg-amber-200 text-amber-950';
+
+        const origFile = getAssetFilename(level, 'a');
+        const diffFile = getAssetFilename(level, 'b');
+
+        card.innerHTML = `
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="px-2.5 py-0.5 rounded-lg text-xs font-black border-2 border-[#3D352E] ${modeColor}">
+                ${level.mode === 'easy' ? '簡易版' : '難度版'}・${level.stageLabel}
+              </span>
+              ${isDone
+                ? `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500 text-white text-xs font-black border border-[#3D352E]">✅ 已通關</span>`
+                : `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-stone-100 text-stone-600 text-xs font-bold border border-stone-300">未挑戰</span>`
+              }
+            </div>
+
+            <div class="w-full aspect-[3/2] rounded-xl overflow-hidden border-2 border-[#3D352E] bg-stone-100">
+              ${buildImageElementHtml(level, 'a', 'w-full h-full object-cover')}
+            </div>
+
+            <div class="space-y-0.5 pt-0.5">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="text-lg font-black text-[#2D2A26] flex items-center gap-1.5">
+                  <span>${level.themeEmoji}</span>
+                  <span>${level.stageLabel}：${level.title}</span>
+                </h3>
+                <span class="text-xs font-bold text-stone-500 shrink-0">6 處不同</span>
+              </div>
+              <div class="text-[11px] font-mono text-stone-500">原圖 ${origFile} / 改動圖 ${diffFile}</div>
+            </div>
+          </div>
+
+          <button class="storybook-btn w-full py-2 rounded-xl text-sm font-black ${isDone ? 'bg-emerald-300 hover:bg-emerald-400' : 'bg-amber-300 hover:bg-amber-400'}">
+            ${isDone ? '再次挑戰 ▶' : '開始遊戲 ▶'}
+          </button>
+        `;
+
+        if (level.mode === 'easy') easyGrid.appendChild(card);
+        else hardGrid.appendChild(card);
+      });
+
+      document.getElementById('easy-progress-text').textContent = `已完成 ${easyDone} / 6 關`;
+      document.getElementById('hard-progress-text').textContent = `已完成 ${hardDone} / 6 關`;
+      document.getElementById('total-completed-count').textContent = easyDone + hardDone;
+      updateLoadedImagesSummary();
+    }
+
+    function goHome() {
+      stopManualTimer();
+      closePeekModal();
+      state.currentLevelId = null;
+      state.editorActive = false;
+      state.dragState = null;
+
+      document.getElementById('view-home').classList.remove('hidden');
+      document.getElementById('view-game').classList.add('hidden');
+      document.getElementById('header-game-status').classList.add('hidden');
+      document.getElementById('header-game-status').classList.remove('flex');
+      document.getElementById('btn-header-home').classList.add('hidden');
+      document.getElementById('btn-header-home').classList.remove('flex');
+
+      renderHomeMenu();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function startLevel(levelId) {
+      const level = LEVELS_DATA.find((l) => l.id === levelId);
+      if (!level) return;
+
+      stopManualTimer();
+      state.currentLevelId = levelId;
+      state.foundDiffIds = [];
+      state.peekCount = 0;
+      state.editorActive = false;
+      state.dragState = null;
+      state.editorSelectedDiffId = 1;
+
+      document.getElementById('view-home').classList.add('hidden');
+      document.getElementById('view-game').classList.remove('hidden');
+      document.getElementById('win-banner').classList.add('hidden');
+      document.getElementById('click-feedback-msg').textContent = '';
+
+      const headerStatus = document.getElementById('header-game-status');
+      headerStatus.classList.remove('hidden');
+      headerStatus.classList.add('flex');
+      const headerHomeBtn = document.getElementById('btn-header-home');
+      headerHomeBtn.classList.remove('hidden');
+      headerHomeBtn.classList.add('flex');
+
+      const origFile = getAssetFilename(level, 'a');
+      const diffFile = getAssetFilename(level, 'b');
+
+      document.getElementById('original-panel-badge').textContent = `🖼️ 原圖（${origFile}）`;
+      document.getElementById('diff-panel-badge').textContent = `🎯 改動圖（${diffFile}，點擊找 6 處不同）`;
+      document.getElementById('single-orig-label').textContent = `替換本題原圖（${origFile}）`;
+      document.getElementById('single-diff-label').textContent = `替換本題改動圖（${diffFile}）`;
+
+      const modeBadge = document.getElementById('header-mode-badge');
+      const gameModeTag = document.getElementById('game-mode-tag');
+      if (level.mode === 'easy') {
+        modeBadge.textContent = `簡易版・${level.stageLabel}`;
+        modeBadge.className = 'px-2.5 py-1 rounded-full text-xs font-black border-2 border-[#3D352E] bg-emerald-300';
+        gameModeTag.textContent = `🌱 簡易版・${level.stageLabel}`;
+        gameModeTag.className = 'px-2.5 py-0.5 rounded-lg text-xs font-black border-2 border-[#3D352E] bg-emerald-300';
+      } else {
+        modeBadge.textContent = `難度版・${level.stageLabel}`;
+        modeBadge.className = 'px-2.5 py-1 rounded-full text-xs font-black border-2 border-[#3D352E] bg-amber-300';
+        gameModeTag.textContent = `🔥 難度版・${level.stageLabel}`;
+        gameModeTag.className = 'px-2.5 py-0.5 rounded-lg text-xs font-black border-2 border-[#3D352E] bg-amber-300';
+      }
+
+      document.getElementById('header-level-title').textContent = `${level.stageLabel}：${level.title}`;
+      document.getElementById('game-title').textContent = `${level.themeEmoji} ${level.stageLabel}：${level.title}`;
+      updateFoundCounter();
+
+      renderSceneImages(level);
+      renderMarkers();
+      renderDifferencesChecklist();
+      renderEditorControls();
+
+      const hardPanel = document.getElementById('hard-control-panel');
+      const mobileTabs = document.getElementById('mobile-compare-tabs');
+      const boardsWrapper = document.getElementById('boards-wrapper');
+      const origPanel = document.getElementById('original-panel');
+      const diffPanel = document.getElementById('diff-panel');
+
+      if (level.mode === 'easy') {
+        hardPanel.classList.add('hidden');
+        mobileTabs.classList.remove('hidden');
+        mobileTabs.classList.add('grid');
+        boardsWrapper.className = 'grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6';
+        origPanel.classList.remove('hidden', 'max-w-3xl', 'mx-auto', 'w-full');
+        diffPanel.classList.remove('hidden', 'max-w-3xl', 'mx-auto', 'w-full');
+        document.getElementById('original-hint-tag').textContent = '請左右對照觀察差異';
+      } else {
+        hardPanel.classList.remove('hidden');
+        mobileTabs.classList.add('hidden');
+        mobileTabs.classList.remove('grid');
+
+        state.hardPhase = 'memorize';
+        const rangeVal = parseInt(document.getElementById('timer-duration-range').value, 10) || 60;
+        state.timerDuration = Math.min(180, Math.max(60, rangeVal));
+        state.timerRemaining = state.timerDuration;
+        updateTimerDisplay();
+
+        document.getElementById('hard-memorize-bar').classList.remove('hidden');
+        document.getElementById('hard-memorize-bar').classList.add('flex');
+        document.getElementById('hard-play-bar').classList.add('hidden');
+        document.getElementById('hard-play-bar').classList.remove('flex');
+        document.getElementById('btn-timer-start').textContent = '▶️ 開始倒數';
+        document.getElementById('peek-count-display').textContent = '0';
+
+        boardsWrapper.className = 'grid grid-cols-1 gap-4';
+        origPanel.classList.remove('hidden');
+        origPanel.classList.add('max-w-3xl', 'mx-auto', 'w-full');
+        diffPanel.classList.add('hidden');
+        document.getElementById('original-hint-tag').textContent = '記憶原圖階段（計時器為手動模式）';
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function restartCurrentLevel() {
+      if (state.currentLevelId) startLevel(state.currentLevelId);
+    }
+
+    function goToNextLevel() {
+      if (!state.currentLevelId) return;
+      const nextId = state.currentLevelId < LEVELS_DATA.length ? state.currentLevelId + 1 : 1;
+      startLevel(nextId);
+    }
+
+    function setMobileView(mode) {
+      const origPanel = document.getElementById('original-panel');
+      const tabBoth = document.getElementById('tab-show-both');
+      const tabDiff = document.getElementById('tab-show-diff');
+      if (mode === 'both') {
+        origPanel.classList.remove('hidden');
+        tabBoth.className = 'py-1.5 rounded-lg text-xs font-black bg-white shadow';
+        tabDiff.className = 'py-1.5 rounded-lg text-xs font-bold text-stone-700';
+      } else {
+        origPanel.classList.add('hidden');
+        tabDiff.className = 'py-1.5 rounded-lg text-xs font-black bg-white shadow';
+        tabBoth.className = 'py-1.5 rounded-lg text-xs font-bold text-stone-700';
+      }
+    }
+
+    function changeTimerDuration(val) {
+      stopManualTimer();
+      const clamped = Math.min(180, Math.max(60, parseInt(val, 10) || 60));
+      state.timerDuration = clamped;
+      state.timerRemaining = clamped;
+      document.getElementById('timer-duration-label').textContent = clamped;
+      updateTimerDisplay();
+      document.getElementById('btn-timer-start').textContent = '▶️ 開始倒數';
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(state.timerRemaining / 60);
+      const secs = state.timerRemaining % 60;
+      document.getElementById('timer-display').textContent =
+        `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function toggleManualTimer() {
+      if (state.timerRunning) {
+        stopManualTimer();
+        document.getElementById('btn-timer-start').textContent = '▶️ 繼續計時';
+      } else {
+        if (state.timerRemaining <= 0) {
+          state.timerRemaining = state.timerDuration;
+        }
+        state.timerRunning = true;
+        document.getElementById('btn-timer-start').textContent = '⏸️ 暫停計時';
+        state.timerInterval = setInterval(() => {
+          state.timerRemaining--;
+          updateTimerDisplay();
+          if (state.timerRemaining <= 0) {
+            stopManualTimer();
+            playTone('alarm');
+            switchToPlayPhase();
+          }
+        }, 1000);
+      }
+    }
+
+    function stopManualTimer() {
+      state.timerRunning = false;
+      if (state.timerInterval) {
+        clearInterval(state.timerInterval);
+        state.timerInterval = null;
+      }
+    }
+
+    function resetManualTimer() {
+      stopManualTimer();
+      state.timerRemaining = state.timerDuration;
+      updateTimerDisplay();
+      document.getElementById('btn-timer-start').textContent = '▶️ 開始倒數';
+    }
+
+    function switchToPlayPhase() {
+      stopManualTimer();
+      state.hardPhase = 'play';
+
+      document.getElementById('hard-memorize-bar').classList.add('hidden');
+      document.getElementById('hard-memorize-bar').classList.remove('flex');
+      document.getElementById('hard-play-bar').classList.remove('hidden');
+      document.getElementById('hard-play-bar').classList.add('flex');
+
+      const origPanel = document.getElementById('original-panel');
+      const diffPanel = document.getElementById('diff-panel');
+      origPanel.classList.add('hidden');
+      diffPanel.classList.remove('hidden');
+      diffPanel.classList.add('max-w-3xl', 'mx-auto', 'w-full');
+    }
+
+    function togglePeekOriginal() {
+      const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
+      if (!level) return;
+
+      state.peekCount++;
+      document.getElementById('peek-count-display').textContent = state.peekCount;
+
+      const origFile = getAssetFilename(level, 'a');
+      document.getElementById('peek-modal-title').textContent = `${level.stageLabel}：${level.title}（${origFile}・第 ${state.peekCount} 次偷看）`;
+      document.getElementById('peek-modal-canvas').innerHTML = buildImageElementHtml(level, 'a', 'w-full h-full object-contain bg-white');
+      document.getElementById('peek-modal').classList.remove('hidden');
+    }
+
+    function closePeekModal() {
+      document.getElementById('peek-modal').classList.add('hidden');
+    }
+
+    function renderSceneImages(level) {
+      const origBox = document.getElementById('original-canvas-box');
+      const diffLayer = document.getElementById('diff-image-layer');
+
+      origBox.innerHTML = buildImageElementHtml(level, 'a', 'w-full h-full object-contain bg-white');
+      diffLayer.innerHTML = buildImageElementHtml(level, 'b', 'w-full h-full object-contain bg-white pointer-events-none');
+    }
+
+    function getRelativePercentCoords(clientX, clientY) {
+      const box = document.getElementById('diff-canvas-box');
+      const rect = box.getBoundingClientRect();
+      const x = ((clientX - rect.left) / rect.width) * 100;
+      const y = ((clientY - rect.top) / rect.height) * 100;
+      return {
+        x: Math.max(0, Math.min(100, x)),
+        y: Math.max(0, Math.min(100, y)),
+        pxX: clientX - rect.left,
+        pxY: clientY - rect.top
+      };
+    }
+
+    function handleDiffImageClick(event) {
+      if (state.editorActive) return;
+
+      const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
+      if (!level) return;
+
+      const { x: clickX, y: clickY, pxX, pxY } = getRelativePercentCoords(event.clientX, event.clientY);
+      const diffs = getLevelDifferences(level);
+      const pad = 2.0;
+
+      const hit = diffs.find((d) => (
+        clickX >= d.x - pad &&
+        clickX <= d.x + d.w + pad &&
+        clickY >= d.y - pad &&
+        clickY <= d.y + d.h + pad
+      ));
+
+      if (hit) {
+        if (!state.foundDiffIds.includes(hit.id)) {
+          state.foundDiffIds.push(hit.id);
+          playTone('correct');
+          updateFoundCounter();
+          renderMarkers();
+          renderDifferencesChecklist();
+          showClickFeedback(`✅ 找到第 ${hit.id} 處：${hit.text}`, 'text-emerald-700');
+
+          if (state.foundDiffIds.length === 6) {
+            handleLevelWin(level);
+          }
+        } else {
+          showClickFeedback(`👌 第 ${hit.id} 處已經圈出來囉！`, 'text-sky-700');
+        }
+      } else {
+        playTone('wrong');
+        triggerWrongFeedback(document.getElementById('diff-canvas-box'), pxX, pxY);
+      }
+    }
+
+    function triggerWrongFeedback(container, pxX, pxY) {
+      container.classList.remove('animate-shake');
+      void container.offsetWidth;
+      container.classList.add('animate-shake');
+
+      showClickFeedback('❌ 這裡一樣喔，再仔細看看！', 'text-rose-600');
+
+      const ping = document.createElement('div');
+      ping.className = 'wrong-ping';
+      ping.style.left = `${pxX}px`;
+      ping.style.top = `${pxY}px`;
+      ping.innerHTML = `
+        <div class="w-9 h-9 rounded-full bg-rose-500/90 border-2 border-white text-white font-black text-lg flex items-center justify-center shadow-md">
+          ✕
+        </div>
+      `;
+      container.appendChild(ping);
+      setTimeout(() => ping.remove(), 700);
+    }
+
+    let feedbackTimer = null;
+    function showClickFeedback(msg, colorClass) {
+      const el = document.getElementById('click-feedback-msg');
+      el.textContent = msg;
+      el.className = `text-xs font-black h-4 ${colorClass}`;
+      clearTimeout(feedbackTimer);
+      feedbackTimer = setTimeout(() => {
+        el.textContent = '';
+      }, 2400);
+    }
+
+    function updateFoundCounter() {
+      const count = state.foundDiffIds.length;
+      document.getElementById('header-found-count').textContent = count;
+      document.getElementById('game-found-num').textContent = count;
+    }
+
+    function renderMarkers() {
+      const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
+      if (!level) return;
+      const diffs = getLevelDifferences(level);
+      const layer = document.getElementById('markers-layer');
+      layer.innerHTML = '';
+
+      diffs.forEach((d) => {
+        if (!state.foundDiffIds.includes(d.id)) return;
+        const box = document.createElement('div');
+        box.className = 'absolute border-[3.5px] border-rose-500 rounded-xl shadow-[0_0_0_2px_#FFFFFF] animate-pop';
+        box.style.left = `${d.x}%`;
+        box.style.top = `${d.y}%`;
+        box.style.width = `${d.w}%`;
+        box.style.height = `${d.h}%`;
+
+        box.innerHTML = `
+          <span class="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-rose-500 border-2 border-white text-white text-xs font-black flex items-center justify-center shadow">
+            ${d.id}
+          </span>
+        `;
+        layer.appendChild(box);
+      });
+    }
+
+    function renderDifferencesChecklist() {
+      const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
+      if (!level) return;
+      const diffs = getLevelDifferences(level);
+      const container = document.getElementById('differences-checklist');
+      container.innerHTML = '';
+
+      diffs.forEach((d) => {
+        const isFound = state.foundDiffIds.includes(d.id);
+        const item = document.createElement('div');
+        item.className = `p-3 rounded-xl border-2 flex items-center gap-2.5 transition-all ${
+          isFound
+            ? 'bg-emerald-50 border-emerald-600 text-emerald-950 font-bold'
+            : 'bg-stone-100 border-stone-300 text-stone-400'
+        }`;
+
+        item.innerHTML = `
+          <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shrink-0 border-2 ${
+            isFound
+              ? 'bg-rose-500 border-[#3D352E] text-white'
+              : 'bg-white border-stone-300 text-stone-400'
+          }">
+            ${d.id}
+          </span>
+          <span class="text-xs sm:text-sm leading-snug">
+            ${isFound ? d.text : '尚未發現（點擊圖片尋找）'}
+          </span>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function revealAllAnswers() {
+      const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
+      if (!level) return;
+      if (level.mode === 'hard' && state.hardPhase === 'memorize') {
+        switchToPlayPhase();
+      }
+      state.foundDiffIds = [1, 2, 3, 4, 5, 6];
+      updateFoundCounter();
+      renderMarkers();
+      renderDifferencesChecklist();
+      playTone('correct');
+      showClickFeedback('💡 已顯示本題全部 6 處答案與說明！', 'text-violet-700');
+    }
+
+    function handleLevelWin(level) {
+      playTone('win');
+      if (!state.completedLevels.includes(level.id)) {
+        state.completedLevels.push(level.id);
+        saveProgress();
+      }
+      document.getElementById('win-banner').classList.remove('hidden');
+    }
+
+    function handleCustomImageUpload(event, suffix) {
+      const file = event.target.files && event.target.files[0];
+      const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
+      if (!file || !level) return;
+
+      const fileName = getAssetFilename(level, suffix);
+      const oldUrl = runtimeImageMap.get(fileName);
+      if (oldUrl && oldUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(oldUrl);
+      }
+      const url = URL.createObjectURL(file);
+      runtimeImageMap.set(fileName, url);
+      relativeFailedMap.set(fileName, false);
+      renderSceneImages(level);
+      updateLoadedImagesSummary();
+      showClickFeedback(`✅ 已載入 ${fileName}`, 'text-emerald-700');
+      event.target.value = '';
+    }
+
+    function toggleCoordinateEditor() {
+      state.editorActive = !state.editorActive;
+      state.dragState = null;
+      const btn = document.getElementById('btn-toggle-editor');
+      const controls = document.getElementById('editor-controls');
+      const overlay = document.getElementById('editor-overlay-layer');
+
+      if (state.editorActive) {
+        btn.textContent = '關閉座標校正模式';
+        btn.classList.replace('bg-amber-200', 'bg-rose-400');
+        controls.classList.remove('hidden');
+        overlay.classList.remove('hidden');
+        renderEditorControls();
+        renderEditorOverlay();
+        updateEditorJsonPreview();
+      } else {
+        btn.textContent = '開啟座標校正模式';
+        btn.classList.replace('bg-rose-400', 'bg-amber-200');
+        controls.classList.add('hidden');
+        overlay.classList.add('hidden');
+      }
+    }
+
+    function renderEditorControls() {
+      const container = document.getElementById('editor-target-buttons');
+      container.innerHTML = '';
+      for (let i = 1; i <= 6; i++) {
+        const b = document.createElement('button');
+        b.className = `px-3 py-1 rounded-lg text-xs font-black border-2 border-[#3D352E] ${
+          state.editorSelectedDiffId === i ? 'bg-rose-500 text-white' : 'bg-stone-100 text-stone-800'
+        }`;
+        b.textContent = `差異 #${i}`;
+        b.onclick = () => {
+          state.editorSelectedDiffId = i;
+          renderEditorControls();
+          renderEditorOverlay();
+        };
+        container.appendChild(b);
+      }
+    }
+
+    function renderEditorOverlay() {
+      const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
+      if (!level) return;
+      const diffs = getLevelDifferences(level);
+      const overlay = document.getElementById('editor-overlay-layer');
+      overlay.innerHTML = '';
+
+      diffs.forEach((d) => {
+        const isSelected = d.id === state.editorSelectedDiffId;
+        const box = document.createElement('div');
+        box.className = `absolute border-2 flex items-center justify-center text-xs font-black cursor-move ${
+          isSelected
+            ? 'border-amber-300 bg-amber-300/35 text-white z-10'
+            : 'border-white/80 bg-white/20 text-white'
+        }`;
+        box.style.left = `${d.x}%`;
+        box.style.top = `${d.y}%`;
+        box.style.width = `${d.w}%`;
+        box.style.height = `${d.h}%`;
+        box.textContent = d.id;
+        overlay.appendChild(box);
+      });
+
+      if (state.dragState && state.dragState.mode === 'draw') {
+        const { startX, startY, curX, curY } = state.dragState;
+        const left = Math.min(startX, curX);
+        const top = Math.min(startY, curY);
+        const width = Math.abs(curX - startX);
+        const height = Math.abs(curY - startY);
+
+        const draft = document.createElement('div');
+        draft.className = 'absolute border-2 border-dashed border-emerald-300 bg-emerald-300/25 pointer-events-none z-20';
+        draft.style.left = `${left}%`;
+        draft.style.top = `${top}%`;
+        draft.style.width = `${width}%`;
+        draft.style.height = `${height}%`;
+        overlay.appendChild(draft);
+      }
+    }
+
+    function beginEditorPointer(clientX, clientY) {
+      if (!state.editorActive) return;
+      const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
+      if (!level) return;
+      const pt = getRelativePercentCoords(clientX, clientY);
+      const diffs = getLevelDifferences(level);
+
+      const clickedBox = diffs.find((d) => (
+        pt.x >= d.x && pt.x <= d.x + d.w && pt.y >= d.y && pt.y <= d.y + d.h
+      ));
+
+      if (clickedBox) {
+        state.editorSelectedDiffId = clickedBox.id;
+        renderEditorControls();
+        state.dragState = {
+          mode: 'move',
+          targetId: clickedBox.id,
+          offsetX: pt.x - clickedBox.x,
+          offsetY: pt.y - clickedBox.y,
+          w: clickedBox.w,
+          h: clickedBox.h
+        };
+      } else {
+        state.dragState = {
+          mode: 'draw',
+          targetId: state.editorSelectedDiffId,
+          startX: pt.x,
+          startY: pt.y,
+          curX: pt.x,
+          curY: pt.y
+        };
+      }
+      renderEditorOverlay();
+    }
+
+    function moveEditorPointer(clientX, clientY) {
+      if (!state.editorActive || !state.dragState) return;
+      const pt = getRelativePercentCoords(clientX, clientY);
+      const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
+      if (!level) return;
+
+      if (state.dragState.mode === 'move') {
+        const nx = Math.max(0, Math.min(100 - state.dragState.w, Math.round((pt.x - state.dragState.offsetX) * 10) / 10));
+        const ny = Math.max(0, Math.min(100 - state.dragState.h, Math.round((pt.y - state.dragState.offsetY) * 10) / 10));
+        commitBoxCoords(level, state.dragState.targetId, nx, ny, state.dragState.w, state.dragState.h, false);
+      } else if (state.dragState.mode === 'draw') {
+        state.dragState.curX = pt.x;
+        state.dragState.curY = pt.y;
+        renderEditorOverlay();
+      }
+    }
+
+    function endEditorPointer(clientX, clientY) {
+      if (!state.editorActive || !state.dragState) return;
+      const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
+      if (!level) {
+        state.dragState = null;
+        return;
+      }
+
+      if (state.dragState.mode === 'draw') {
+        const pt = clientX != null ? getRelativePercentCoords(clientX, clientY) : { x: state.dragState.curX, y: state.dragState.curY };
+        const rawW = Math.abs(pt.x - state.dragState.startX);
+        const rawH = Math.abs(pt.y - state.dragState.startY);
+        const diffs = getLevelDifferences(level);
+        const cur = diffs.find((d) => d.id === state.dragState.targetId) || { w: 12, h: 12 };
+
+        if (rawW < 1.5 && rawH < 1.5) {
+          const nx = Math.max(0, Math.min(100 - cur.w, Math.round((pt.x - cur.w / 2) * 10) / 10));
+          const ny = Math.max(0, Math.min(100 - cur.h, Math.round((pt.y - cur.h / 2) * 10) / 10));
+          commitBoxCoords(level, state.dragState.targetId, nx, ny, cur.w, cur.h, true);
+        } else {
+          const x = Math.round(Math.min(state.dragState.startX, pt.x) * 10) / 10;
+          const y = Math.round(Math.min(state.dragState.startY, pt.y) * 10) / 10;
+          const w = Math.max(2, Math.round(rawW * 10) / 10);
+          const h = Math.max(2, Math.round(rawH * 10) / 10);
+          commitBoxCoords(level, state.dragState.targetId, x, y, w, h, true);
+        }
+      } else {
+        updateEditorJsonPreview();
+        renderMarkers();
+      }
+
+      state.dragState = null;
+      renderEditorOverlay();
+    }
+
+    function commitBoxCoords(level, diffId, x, y, w, h, refreshAll) {
+      const diffs = getLevelDifferences(level);
+      const idx = diffs.findIndex((d) => d.id === diffId);
+      if (idx === -1) return;
+      diffs[idx] = { ...diffs[idx], x, y, w, h };
+
+      state.customCoords[level.id] = diffs.map(({ id, x: bx, y: by, w: bw, h: bh }) => ({
+        id, x: bx, y: by, w: bw, h: bh
+      }));
+      saveCustomCoords();
+
+      if (refreshAll) {
+        renderEditorOverlay();
+        renderMarkers();
+        updateEditorJsonPreview();
+        showClickFeedback(`📐 已更新差異 #${diffId}：(${x}%, ${y}%, ${w}%, ${h}%)`, 'text-amber-800');
+      } else {
+        renderEditorOverlay();
+      }
+    }
+
+    function updateEditorJsonPreview() {
+      const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
+      if (!level) return;
+      const diffs = getLevelDifferences(level).map(({ id, text, x, y, w, h }) => ({ id, text, x, y, w, h }));
+      document.getElementById('editor-json-preview').textContent = JSON.stringify({
+        levelId: level.id,
+        title: level.title,
+        images: [getAssetFilename(level, 'a'), getAssetFilename(level, 'b')],
+        differences: diffs
+      }, null, 2);
+    }
+
+    function copyLevelCoordinatesJSON() {
+      const level = LEVELS_DATA.find((l) => l.id === state.currentLevelId);
+      if (!level) return;
+      const diffs = getLevelDifferences(level).map(({ id, text, x, y, w, h }) => ({ id, text, x, y, w, h }));
+      const jsonText = JSON.stringify({
+        levelId: level.id,
+        title: level.title,
+        images: [getAssetFilename(level, 'a'), getAssetFilename(level, 'b')],
+        differences: diffs
+      }, null, 2);
+
+      const ta = document.createElement('textarea');
+      ta.value = jsonText;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showClickFeedback('📋 已複製本關座標 JSON 至剪貼簿！', 'text-emerald-700');
+      } catch (e) {
+        showClickFeedback('⚠️ 無法自動複製，請手動選取下方 JSON', 'text-rose-600');
+      }
+      document.body.removeChild(ta);
+    }
+
+    function handleEditorMouseDown(e) {
+      if (!state.editorActive) return;
+      e.stopPropagation();
+      beginEditorPointer(e.clientX, e.clientY);
+    }
+    function handleEditorMouseMove(e) {
+      if (!state.editorActive || !state.dragState) return;
+      moveEditorPointer(e.clientX, e.clientY);
+    }
+    function handleEditorMouseUp(e) {
+      if (!state.editorActive || !state.dragState) return;
+      endEditorPointer(e.clientX, e.clientY);
+    }
+    function handleEditorTouchStart(e) {
+      if (!state.editorActive || !e.touches || !e.touches[0]) return;
+      e.preventDefault();
+      beginEditorPointer(e.touches[0].clientX, e.touches[0].clientY);
+    }
+    function handleEditorTouchMove(e) {
+      if (!state.editorActive || !state.dragState || !e.touches || !e.touches[0]) return;
+      e.preventDefault();
+      moveEditorPointer(e.touches[0].clientX, e.touches[0].clientY);
+    }
+    function handleEditorTouchEnd(e) {
+      if (!state.editorActive || !state.dragState) return;
+      const t = e.changedTouches && e.changedTouches[0];
+      endEditorPointer(t ? t.clientX : null, t ? t.clientY : null);
+    }
+
+    function resetLevelCustomData() {
+      if (!state.currentLevelId) return;
+      delete state.customCoords[state.currentLevelId];
+      saveCustomCoords();
+      renderMarkers();
+      renderDifferencesChecklist();
+      if (state.editorActive) {
+        renderEditorOverlay();
+        updateEditorJsonPreview();
+      }
+      showClickFeedback('↺ 已還原本關預設座標', 'text-sky-700');
+    }
+
+    function openResetModal() {
+      document.getElementById('reset-modal').classList.remove('hidden');
+    }
+
+    function closeResetModal() {
+      document.getElementById('reset-modal').classList.add('hidden');
+    }
+
+    function confirmResetProgress() {
+      state.completedLevels = [];
+      saveProgress();
+      closeResetModal();
+      renderHomeMenu();
+    }
+
+    function initApp() {
+      loadPersistedState();
+      renderHomeMenu();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+  </script>
+</body>
+</html>
